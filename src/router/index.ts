@@ -1,24 +1,86 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
-import Dashboard from '../views/Dashboard.vue';
-import Benchmarks from '../views/Benchmarks.vue';
-import ConsensusConfig from '../views/ConsensusConfig.vue';
-import PolicyConfig from '../views/PolicyConfig.vue';
-import Metrics from '../views/Metrics.vue';
-import Settings from '../views/Settings.vue';
+import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import type { PageMeta } from '../types'
+
+declare module 'vue-router' {
+  interface RouteMeta extends PageMeta {}
+}
 
 const routes: RouteRecordRaw[] = [
-  { path: '/', redirect: '/dashboard' },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { title: '仪表盘' } },
-  { path: '/benchmarks', name: 'Benchmarks', component: Benchmarks, meta: { title: '压测任务' } },
-  { path: '/consensus', name: 'Consensus', component: ConsensusConfig, meta: { title: '共识配置' } },
-  { path: '/policies', name: 'Policies', component: PolicyConfig, meta: { title: '反操纵策略' } },
-  { path: '/metrics', name: 'Metrics', component: Metrics, meta: { title: '监控与指标' } },
-  { path: '/settings', name: 'Settings', component: Settings, meta: { title: '系统设置' } },
-];
+  {
+    path: '/',
+    component: () => import('../layouts/AppLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Dashboard',
+        component: () => import('../views/Dashboard/index.vue'),
+        meta: {
+          title: '仪表盘',
+          icon: '📊'
+        }
+      },
+      {
+        path: '/benchmarks',
+        name: 'Benchmarks',
+        component: () => import('../views/Benchmarks/index.vue'),
+        meta: {
+          title: '压测任务',
+          icon: '⚡'
+        }
+      },
+      {
+        path: '/benchmarks/:id',
+        name: 'BenchmarkDetail',
+        component: () => import('../views/Benchmarks/TaskDetail.vue'),
+        meta: {
+          title: '任务详情',
+          breadcrumb: true
+        }
+      },
+      {
+        path: '/consensus',
+        name: 'Consensus',
+        component: () => import('../views/Consensus/index.vue'),
+        meta: {
+          title: '共识配置',
+          icon: '🔗'
+        }
+      },
+      {
+        path: '/anti-manipulation',
+        name: 'AntiManipulation',
+        component: () => import('../views/AntiManipulation/index.vue'),
+        meta: {
+          title: '反操纵策略',
+          icon: '🛡️'
+        }
+      },
+      {
+        path: '/metrics',
+        name: 'Metrics',
+        component: () => import('../views/Metrics/index.vue'),
+        meta: {
+          title: '监控指标',
+          icon: '📈'
+        }
+      }
+    ]
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue')
+  }
+]
 
 const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes
+})
 
-export default router;
+router.beforeEach((to, from, next) => {
+  document.title = `${to.meta.title ? to.meta.title + ' - ' : ''}HCP-Bench 控制台`
+  next()
+})
+
+export default router
