@@ -8,7 +8,7 @@ declare module 'vue-router' {
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('../layouts/AppLayout.vue'),
+    component: () => import('../components/layout/AppLayout.vue'),
     children: [
       {
         path: '',
