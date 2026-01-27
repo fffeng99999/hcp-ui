@@ -7,6 +7,12 @@ declare module 'vue-router' {
 
 const routes: RouteRecordRaw[] = [
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('../views/Login/index.vue'),
+    meta: { title: '用户登录' }
+  },
+  {
     path: '/',
     component: () => import('../components/layout/AppLayout.vue'),
     children: [
