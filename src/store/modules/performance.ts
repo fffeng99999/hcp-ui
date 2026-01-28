@@ -82,8 +82,8 @@ export const usePerformanceStore = defineStore('performance', () => {
         }
       }
 
-      ws.onerror = (error: Event) => {
-        console.error('WebSocket error:', error)
+      ws.onerror = (evt: Event) => {
+        console.error('WebSocket error:', evt)
         error.value = 'WebSocket connection error'
       }
 

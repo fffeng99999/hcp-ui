@@ -1,3 +1,4 @@
+import type { PerformanceMetrics } from './performance'
 /**
  * 共识算法类型
  */

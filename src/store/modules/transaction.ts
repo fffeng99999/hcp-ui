@@ -4,7 +4,6 @@ import * as transactionAPI from '@/api/transaction'
 import type {
   Transaction,
   TransactionSubmitRequest,
-  TransactionStats,
   TransactionStatus
 } from '@/types'
 

@@ -37,7 +37,7 @@ axiosInstance.interceptors.response.use(
       window.location.href = '/login'
     }
 
-    const message = error.response?.data?.message || error.message || '请求失败'
+    const message = (error.response?.data as any)?.message || error.message || '请求失败'
     console.error('Response error:', message)
 
     return Promise.reject({

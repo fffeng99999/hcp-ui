@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
-import MainLayout from '@/layouts/MainLayout.vue'
+import AppLayout from '@/components/layout/AppLayout.vue'
 
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: MainLayout,
+    component: AppLayout,
     redirect: '/dashboard',
     children: [
       {
@@ -70,6 +70,22 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login/index.vue'),
+    meta: {
+      title: 'Login'
+    }
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/Login/index.vue'),
+    meta: {
+      title: 'Login'
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),
@@ -84,7 +100,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   document.title = `${to.meta.title} - HCP Benchmark`
   
   // Auth check logic here

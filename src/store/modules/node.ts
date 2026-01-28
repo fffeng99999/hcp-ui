@@ -3,8 +3,6 @@ import { ref, computed } from 'vue'
 import * as nodeAPI from '@/api/node'
 import type {
   Node,
-  NodeDetail,
-  NodeStats,
   NodeRegistrationRequest,
   FaultInjectionConfig
 } from '@/types'

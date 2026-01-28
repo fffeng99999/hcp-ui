@@ -5,7 +5,6 @@ import type {
   ConsensusAlgorithm,
   ConsensusAlgorithmType,
   ConsensusConfig,
-  ConsensusParameters,
   TPBFTParameters,
   PBFTParameters,
   HotStuffParameters,
