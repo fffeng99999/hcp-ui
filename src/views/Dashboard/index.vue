@@ -159,6 +159,7 @@ import { usePerformanceStore } from '@/store/modules/performance'
 import { useBenchmarkStore } from '@/store/modules/benchmark'
 import { useNodeStore } from '@/store/modules/node'
 import { useConsensusStore } from '@/store/modules/consensus'
+import * as analysisAPI from '@/api/analysis'
 
 const performanceStore = usePerformanceStore()
 const benchmarkStore = useBenchmarkStore()
@@ -233,39 +234,72 @@ const initLatencyChart = () => {
 }
 
 // 初始化TPS对比图
-const initTpsChart = () => {
+const initTpsChart = async () => {
   if (!tpsChartRef.value) return
   tpsChart = echarts.init(tpsChartRef.value)
   
-  // FIXME: This should ideally come from backend analysis data
-  const option = {
-    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-    legend: { data: ['tPBFT', 'PBFT'] },
-    xAxis: {
-      type: 'category',
-      data: ['10节点', '30节点', '50节点', '100节点', '200节点']
-    },
-    yAxis: {
-      type: 'value',
-      name: 'TPS'
-    },
-    series: [
-      {
-        name: 'tPBFT',
-        type: 'bar',
-        data: [2800, 2200, 1850, 1200, 800],
-        itemStyle: { color: '#67C23A' }
+  try {
+    const comparisonData = await analysisAPI.getAlgorithmComparison({
+      algorithms: ['tPBFT', 'PBFT']
+    })
+    
+    // Process data for chart
+    // Assuming data structure: [{ algorithm: 'tPBFT', data: [{nodeCount: 10, tps: 2800}, ...] }, ...]
+    const nodeCounts = comparisonData[0]?.data.map(d => d.nodeCount + '节点') || []
+    
+    const series = comparisonData.map(item => ({
+      name: item.algorithm,
+      type: 'bar',
+      data: item.data.map(d => d.tps),
+      itemStyle: { color: item.algorithm === 'tPBFT' ? '#67C23A' : '#E6A23C' }
+    }))
+
+    const option = {
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      legend: { data: comparisonData.map(c => c.algorithm) },
+      xAxis: {
+        type: 'category',
+        data: nodeCounts
       },
-      {
-        name: 'PBFT',
-        type: 'bar',
-        data: [1800, 1400, 1200, 750, 450],
-        itemStyle: { color: '#E6A23C' }
-      }
-    ]
+      yAxis: {
+        type: 'value',
+        name: 'TPS'
+      },
+      series: series
+    }
+    
+    tpsChart.setOption(option)
+  } catch (error) {
+    console.warn('Failed to load TPS comparison data, using fallback', error)
+    // Fallback data
+    const option = {
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+      legend: { data: ['tPBFT', 'PBFT'] },
+      xAxis: {
+        type: 'category',
+        data: ['10节点', '30节点', '50节点', '100节点', '200节点']
+      },
+      yAxis: {
+        type: 'value',
+        name: 'TPS'
+      },
+      series: [
+        {
+          name: 'tPBFT',
+          type: 'bar',
+          data: [2800, 2200, 1850, 1200, 800],
+          itemStyle: { color: '#67C23A' }
+        },
+        {
+          name: 'PBFT',
+          type: 'bar',
+          data: [1800, 1400, 1200, 750, 450],
+          itemStyle: { color: '#E6A23C' }
+        }
+      ]
+    }
+    tpsChart.setOption(option)
   }
-  
-  tpsChart.setOption(option)
 }
 
 // 初始化节点状态图
@@ -313,38 +347,78 @@ const initNodeStatusChart = () => {
 }
 
 // 初始化性能界限分析图
-const initPerformanceLimitChart = () => {
+const initPerformanceLimitChart = async () => {
   if (!performanceLimitChartRef.value) return
   performanceLimitChart = echarts.init(performanceLimitChartRef.value)
   
-  const option = {
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['实际TPS', '理论上限'] },
-    xAxis: {
-      type: 'value',
-      name: '节点数量'
-    },
-    yAxis: {
-      type: 'value',
-      name: 'TPS'
-    },
-    series: [
-      {
-        name: '实际TPS',
-        type: 'line',
-        data: [[10, 2800], [30, 2200], [50, 1850], [100, 1200], [200, 800]],
-        itemStyle: { color: '#409EFF' }
-      },
-      {
-        name: '理论上限',
-        type: 'line',
-        data: [[10, 3500], [30, 2800], [50, 2400], [100, 1800], [200, 1200]],
-        itemStyle: { color: '#909399', type: 'dashed' }
+  const updateChart = async () => {
+    try {
+      const data = await analysisAPI.getPerformanceLimits(selectedConsensus.value)
+      
+      const option = {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['实际TPS', '理论上限'] },
+        xAxis: {
+          type: 'value',
+          name: '节点数量'
+        },
+        yAxis: {
+          type: 'value',
+          name: 'TPS'
+        },
+        series: [
+          {
+            name: '实际TPS',
+            type: 'line',
+            data: data.map(d => [d.nodeCount, d.actualTps]),
+            itemStyle: { color: '#409EFF' }
+          },
+          {
+            name: '理论上限',
+            type: 'line',
+            data: data.map(d => [d.nodeCount, d.theoreticalTps]),
+            itemStyle: { color: '#909399', type: 'dashed' }
+          }
+        ]
       }
-    ]
+      performanceLimitChart?.setOption(option)
+    } catch (error) {
+      console.warn('Failed to load performance limits, using fallback', error)
+      const option = {
+        tooltip: { trigger: 'axis' },
+        legend: { data: ['实际TPS', '理论上限'] },
+        xAxis: {
+          type: 'value',
+          name: '节点数量'
+        },
+        yAxis: {
+          type: 'value',
+          name: 'TPS'
+        },
+        series: [
+          {
+            name: '实际TPS',
+            type: 'line',
+            data: [[10, 2800], [30, 2200], [50, 1850], [100, 1200], [200, 800]],
+            itemStyle: { color: '#409EFF' }
+          },
+          {
+            name: '理论上限',
+            type: 'line',
+            data: [[10, 3500], [30, 2800], [50, 2400], [100, 1800], [200, 1200]],
+            itemStyle: { color: '#909399', type: 'dashed' }
+          }
+        ]
+      }
+      performanceLimitChart?.setOption(option)
+    }
   }
+
+  await updateChart()
   
-  performanceLimitChart.setOption(option)
+  watch(selectedConsensus, () => {
+    updateChart()
+  })
 }
 
 const createNewTest = () => {

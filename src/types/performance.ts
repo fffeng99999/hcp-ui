@@ -48,3 +48,18 @@ export interface WebSocketMessage<T = any> {
   timestamp: string
   data: T
 }
+
+export interface AlgorithmComparisonData {
+  algorithm: string
+  data: {
+    nodeCount: number
+    tps: number
+    latency: number
+  }[]
+}
+
+export interface PerformanceLimitData {
+  nodeCount: number
+  actualTps: number
+  theoreticalTps: number
+}

@@ -26,5 +26,15 @@ export const endpoints = {
   // Metrics
   METRICS_HISTORICAL: '/metrics/historical',
   METRICS_COMPARE: '/metrics/compare',
-  METRICS_EXPORT: '/metrics/export'
+  METRICS_EXPORT: '/metrics/export',
+
+  // Settings
+  SETTINGS_GENERAL: '/settings/general',
+  SETTINGS_NETWORK: '/settings/network',
+  SETTINGS_STORAGE: '/settings/storage',
+  SETTINGS_SECURITY: '/settings/security',
+  SETTINGS_NOTIFICATION: '/settings/notification',
+  SETTINGS_BACKUP: '/settings/backup',
+  SETTINGS_USERS: '/settings/users',
+  SETTINGS_BACKUPS: '/settings/backups'
 }

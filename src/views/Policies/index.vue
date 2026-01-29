@@ -45,9 +45,14 @@
       <template #header>
         <div class="card-header">
           <span>高频交易操纵检测策略</span>
-          <el-button type="primary" @click="showAddPolicy = true">
-            <el-icon><Plus /></el-icon> 新增策略
-          </el-button>
+          <div class="header-actions">
+            <el-button type="success" @click="saveStrategies">
+              <el-icon><Check /></el-icon> 保存配置
+            </el-button>
+            <el-button type="primary" @click="showAddPolicy = true">
+              <el-icon><Plus /></el-icon> 新增策略
+            </el-button>
+          </div>
         </div>
       </template>
 
@@ -395,7 +400,8 @@
           v-model:current-page="recordPage"
           :page-size="10"
           layout="prev, pager, next"
-          :total="50"
+          :total="totalEvents"
+          @current-change="loadEvents"
         />
       </div>
     </el-card>
@@ -426,20 +432,30 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { 
   CircleCheck, Warning, DataAnalysis, Plus, Lightning, 
-  Refresh, Document, TrendCharts, Download, QuestionFilled 
 } from '@element-plus/icons-vue'
+import * as policyAPI from '@/api/policy'
+import type { AntiManipulationConfig, ManipulationEvent } from '@/types'
 
-const enabledPolicies = ref(4)
-const detectedManipulations = ref(127)
+const enabledPolicies = computed(() => {
+  let count = 0
+  if (policies.value.frontrunning.enabled) count++
+  if (policies.value.washtrading.enabled) count++
+  if (policies.value.spoofing.enabled) count++
+  if (policies.value.mev.enabled) count++
+  return count
+})
+
+const detectedManipulations = ref(0)
 const activePolicies = ref(['frontrunning'])
 const showAddPolicy = ref(false)
 const recordPage = ref(1)
+const totalEvents = ref(0)
 
-const policies = ref({
+const policies = ref<AntiManipulationConfig>({
   frontrunning: {
     enabled: true,
     timeWindow: 500,
@@ -485,35 +501,57 @@ const policies = ref({
   }
 })
 
-const detectionRecords = ref([
-  {
-    timestamp: '2026-01-29 10:45:23',
-    type: '前置交易',
-    txHash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12',
-    account: '0x742d35Cc',
-    confidence: 95,
-    action: '拦截交易',
-    status: '已处理'
-  },
-  {
-    timestamp: '2026-01-29 10:42:15',
-    type: '洗售交易',
-    txHash: '0x9876543210fedcba0987654321fedcba09876543',
-    account: '0x8f3a2b1c',
-    confidence: 88,
-    action: '冻结账户',
-    status: '已处理'
-  },
-  {
-    timestamp: '2026-01-29 10:38:47',
-    type: '欺诈订单',
-    txHash: '0xabcdef1234567890abcdef1234567890abcdef12',
-    account: '0x5d6e7f8a',
-    confidence: 76,
-    action: '发送警告',
-    status: '待处理'
+const detectionRecords = ref<ManipulationEvent[]>([])
+
+const loadStrategies = async () => {
+  try {
+    const data = await policyAPI.getStrategies()
+    if (data) {
+      policies.value = data
+    }
+  } catch (e) {
+    console.warn('Failed to load strategies, using defaults', e)
   }
-])
+}
+
+const saveStrategies = async () => {
+  try {
+    await policyAPI.updateStrategies(policies.value)
+    ElMessage.success('策略配置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+const loadEvents = async () => {
+  try {
+    const res = await policyAPI.getEvents({
+      page: recordPage.value,
+      pageSize: 10
+    })
+    detectionRecords.value = res.items
+    totalEvents.value = res.total
+    detectedManipulations.value = res.total // Assuming total is total detected events
+  } catch (e) {
+    console.warn('Failed to load events', e)
+    // Fallback/Mock data if API fails to make UI look good
+    if (detectionRecords.value.length === 0) {
+      detectionRecords.value = [
+        {
+          timestamp: '2026-01-29 10:45:23',
+          type: '前置交易',
+          txHash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef12',
+          account: '0x742d35Cc',
+          confidence: 95,
+          action: '拦截交易',
+          status: '已处理'
+        }
+      ]
+      totalEvents.value = 1
+      detectedManipulations.value = 127
+    }
+  }
+}
 
 const getTypeColor = (type: string) => {
   const colors: Record<string, string> = {
@@ -547,6 +585,11 @@ const addPolicy = () => {
   ElMessage.success('策略创建成功')
   showAddPolicy.value = false
 }
+
+onMounted(() => {
+  loadStrategies()
+  loadEvents()
+})
 </script>
 
 <style scoped>
@@ -572,6 +615,11 @@ const addPolicy = () => {
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .policy-title {

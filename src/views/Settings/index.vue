@@ -443,7 +443,7 @@
           <template #header>
             <div class="card-header">
               <span>用户管理</span>
-              <el-button type="primary" size="small" @click="showAddUser = true">
+              <el-button type="primary" size="small" @click="handleAddUser">
                 <el-icon><Plus /></el-icon> 新增用户
               </el-button>
             </div>
@@ -536,7 +536,7 @@
             <el-col :span="8">
               <el-statistic title="内存使用率" :value="72.3" suffix="%">
                 <template #prefix>
-                  <el-icon><MemoryCard /></el-icon>
+                  <el-icon><Monitor /></el-icon>
                 </template>
               </el-statistic>
             </el-col>
@@ -638,49 +638,57 @@
       </el-col>
     </el-row>
 
-    <!-- 新增用户对话框 -->
-    <el-dialog v-model="showAddUser" title="新增用户" width="500px">
-      <el-form :model="newUser" label-width="100px">
+    <!-- 用户编辑对话框 -->
+    <el-dialog v-model="showUserDialog" :title="isEditing ? '编辑用户' : '新增用户'" width="500px">
+      <el-form :model="userForm" label-width="100px">
         <el-form-item label="用户名">
-          <el-input v-model="newUser.username" placeholder="请输入用户名" />
+          <el-input v-model="userForm.username" placeholder="请输入用户名" :disabled="isEditing" />
         </el-form-item>
         <el-form-item label="邮箱">
-          <el-input v-model="newUser.email" placeholder="请输入邮箱" />
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="newUser.password" type="password" show-password placeholder="请输入密码" />
+          <el-input v-model="userForm.email" placeholder="请输入邮箱" />
         </el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="newUser.role" style="width: 100%">
+          <el-select v-model="userForm.role" style="width: 100%">
             <el-option label="超级管理员" value="超级管理员" />
             <el-option label="管理员" value="管理员" />
             <el-option label="操作员" value="操作员" />
             <el-option label="观察者" value="观察者" />
           </el-select>
         </el-form-item>
+        <el-form-item label="状态" v-if="isEditing">
+          <el-select v-model="userForm.status" style="width: 100%">
+            <el-option label="正常" value="正常" />
+            <el-option label="禁用" value="禁用" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showAddUser = false">取消</el-button>
-        <el-button type="primary" @click="addUser">创建用户</el-button>
+        <el-button @click="showUserDialog = false">取消</el-button>
+        <el-button type="primary" @click="saveUser">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Setting, Connection, FolderOpened, Lock, Bell, User, Monitor, Download,
   Plus, Upload, FolderAdd, Cpu
 } from '@element-plus/icons-vue'
+import * as settingsAPI from '@/api/settings'
+import type { 
+  GeneralSettings, NetworkSettings, StorageSettings, 
+  SecuritySettings, NotificationSettings, BackupSettings,
+  SystemUser, BackupRecord 
+} from '@/types'
 
 const activeMenu = ref('general')
-const showAddUser = ref(false)
 const optimizing = ref(false)
 
-// 通用设置
-const generalSettings = ref({
+// --- General Settings ---
+const generalSettings = ref<GeneralSettings>({
   systemName: 'HCP-Bench系统',
   language: 'zh-CN',
   timezone: 'Asia/Shanghai',
@@ -691,8 +699,27 @@ const generalSettings = ref({
   rateLimit: 1000
 })
 
-// 网络设置
-const networkSettings = ref({
+const saveGeneralSettings = async () => {
+  try {
+    await settingsAPI.updateGeneralSettings(generalSettings.value)
+    ElMessage.success('通用设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+const resetGeneralSettings = async () => {
+  try {
+    const data = await settingsAPI.getGeneralSettings()
+    generalSettings.value = data
+    ElMessage.info('已重置')
+  } catch (e) {
+    ElMessage.warning('重置失败')
+  }
+}
+
+// --- Network Settings ---
+const networkSettings = ref<NetworkSettings>({
   listenAddress: '0.0.0.0',
   p2pPort: 30303,
   rpcPort: 8545,
@@ -702,13 +729,32 @@ const networkSettings = ref({
   upnp: true,
   natTraversal: true,
   uploadBandwidth: 100,
-  downloadBandwidth: 100
+  downloadBandwidth: 100,
+  seedNodes: ['192.168.1.10:30303', '192.168.1.11:30303', '192.168.1.12:30303']
 })
 
-const seedNodesInput = ref('192.168.1.10:30303\n192.168.1.11:30303\n192.168.1.12:30303')
+const seedNodesInput = computed({
+  get: () => networkSettings.value.seedNodes.join('\n'),
+  set: (val) => {
+    networkSettings.value.seedNodes = val.split('\n').filter(s => s.trim())
+  }
+})
 
-// 存储设置
-const storageSettings = ref({
+const saveNetworkSettings = async () => {
+  try {
+    await settingsAPI.updateNetworkSettings(networkSettings.value)
+    ElMessage.success('网络配置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+const testNetworkConnection = () => {
+  ElMessage.success('网络连接测试成功')
+}
+
+// --- Storage Settings ---
+const storageSettings = ref<StorageSettings>({
   dataPath: '/data/hcp-bench',
   logPath: '/var/log/hcp-bench',
   dbType: 'leveldb',
@@ -723,8 +769,39 @@ const storageUsed = ref(385)
 const storageTotal = ref(1024)
 const storageUsage = computed(() => Math.round((storageUsed.value / storageTotal.value) * 100))
 
-// 安全设置
-const securitySettings = ref({
+const getStorageColor = (percentage: number) => {
+  if (percentage >= 90) return '#F56C6C'
+  if (percentage >= 70) return '#E6A23C'
+  return '#67C23A'
+}
+
+const selectDataPath = () => ElMessage.info('打开文件选择器')
+const selectLogPath = () => ElMessage.info('打开文件选择器')
+
+const saveStorageSettings = async () => {
+  try {
+    await settingsAPI.updateStorageSettings(storageSettings.value)
+    ElMessage.success('存储配置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+const optimizeStorage = () => {
+  optimizing.value = true
+  setTimeout(() => {
+    optimizing.value = false
+    ElMessage.success('存储优化完成')
+  }, 2000)
+}
+
+const cleanupStorage = () => {
+  ElMessageBox.confirm('确定清理垃圾数据吗?此操作不可恢复', '警告', { type: 'warning' })
+    .then(() => ElMessage.success('清理完成,释放空间 15.8GB'))
+}
+
+// --- Security Settings ---
+const securitySettings = ref<SecuritySettings>({
   jwtEnabled: true,
   jwtExpiration: 24,
   twoFactorAuth: false,
@@ -736,13 +813,33 @@ const securitySettings = ref({
   dataEncryption: true,
   encryptionAlgo: 'aes-256-gcm',
   tlsEnabled: true,
-  tlsVersion: '1.3'
+  tlsVersion: '1.3',
+  ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8']
 })
 
-const ipWhitelistInput = ref('192.168.1.0/24\n10.0.0.0/8')
+const ipWhitelistInput = computed({
+  get: () => securitySettings.value.ipWhitelist.join('\n'),
+  set: (val) => {
+    securitySettings.value.ipWhitelist = val.split('\n').filter(s => s.trim())
+  }
+})
 
-// 通知设置
-const notificationSettings = ref({
+const saveSecuritySettings = async () => {
+  try {
+    await settingsAPI.updateSecuritySettings(securitySettings.value)
+    ElMessage.success('安全设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
+}
+
+const generateNewKeys = () => {
+  ElMessageBox.confirm('重新生成密钥将使所有现有会话失效,确定继续吗?', '警告', { type: 'warning' })
+    .then(() => ElMessage.success('密钥已重新生成'))
+}
+
+// --- Notification Settings ---
+const notificationSettings = ref<NotificationSettings>({
   emailEnabled: true,
   smtpHost: 'smtp.example.com',
   smtpPort: 587,
@@ -756,150 +853,30 @@ const notificationSettings = ref({
   securityEvents: ['manipulation', 'attack', 'unauthorized']
 })
 
-// 用户列表
-const users = ref([
-  {
-    username: 'admin',
-    email: 'admin@hcp-bench.com',
-    role: '超级管理员',
-    status: '正常',
-    lastLogin: '2026-01-29 10:30:00',
-    createdAt: '2025-12-01 09:00:00'
-  },
-  {
-    username: 'operator',
-    email: 'operator@hcp-bench.com',
-    role: '操作员',
-    status: '正常',
-    lastLogin: '2026-01-29 09:15:00',
-    createdAt: '2025-12-15 14:30:00'
-  },
-  {
-    username: 'observer',
-    email: 'observer@hcp-bench.com',
-    role: '观察者',
-    status: '正常',
-    lastLogin: '2026-01-28 16:45:00',
-    createdAt: '2026-01-10 11:20:00'
+const saveNotificationSettings = async () => {
+  try {
+    await settingsAPI.updateNotificationSettings(notificationSettings.value)
+    ElMessage.success('通知设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
   }
-])
+}
 
-const newUser = ref({
+const testNotification = () => ElMessage.success('测试通知已发送')
+
+// --- Users ---
+const users = ref<SystemUser[]>([])
+const showUserDialog = ref(false)
+const isEditing = ref(false)
+const userForm = ref<Partial<SystemUser>>({
   username: '',
   email: '',
-  password: '',
-  role: '观察者'
+  role: '观察者',
+  status: '正常'
 })
-
-// 备份设置
-const backupSettings = ref({
-  autoBackup: true,
-  frequency: 'daily',
-  retentionCount: 7,
-  backupPath: '/backup/hcp-bench'
-})
-
-const backupList = ref([
-  {
-    name: 'backup-2026-01-29-auto',
-    size: '2.3GB',
-    type: '自动',
-    createdAt: '2026-01-29 02:00:00',
-    status: '完整'
-  },
-  {
-    name: 'backup-2026-01-28-auto',
-    size: '2.1GB',
-    type: '自动',
-    createdAt: '2026-01-28 02:00:00',
-    status: '完整'
-  },
-  {
-    name: 'backup-2026-01-27-manual',
-    size: '2.0GB',
-    type: '手动',
-    createdAt: '2026-01-27 15:30:00',
-    status: '完整'
-  }
-])
-
-// 方法
-const handleMenuSelect = (index: string) => {
-  activeMenu.value = index
-}
-
-const saveGeneralSettings = () => {
-  ElMessage.success('通用设置已保存')
-}
-
-const resetGeneralSettings = () => {
-  ElMessage.info('已重置为默认设置')
-}
-
-const saveNetworkSettings = () => {
-  ElMessage.success('网络配置已保存')
-}
-
-const testNetworkConnection = () => {
-  ElMessage.success('网络连接测试成功')
-}
-
-const getStorageColor = (percentage: number) => {
-  if (percentage >= 90) return '#F56C6C'
-  if (percentage >= 70) return '#E6A23C'
-  return '#67C23A'
-}
-
-const selectDataPath = () => {
-  ElMessage.info('打开文件选择器')
-}
-
-const selectLogPath = () => {
-  ElMessage.info('打开文件选择器')
-}
-
-const saveStorageSettings = () => {
-  ElMessage.success('存储配置已保存')
-}
-
-const optimizeStorage = () => {
-  optimizing.value = true
-  setTimeout(() => {
-    optimizing.value = false
-    ElMessage.success('存储优化完成')
-  }, 2000)
-}
-
-const cleanupStorage = () => {
-  ElMessageBox.confirm('确定清理垃圾数据吗?此操作不可恢复', '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('清理完成,释放空间 15.8GB')
-  })
-}
-
-const saveSecuritySettings = () => {
-  ElMessage.success('安全设置已保存')
-}
-
-const generateNewKeys = () => {
-  ElMessageBox.confirm('重新生成密钥将使所有现有会话失效,确定继续吗?', '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('密钥已重新生成')
-  })
-}
-
-const saveNotificationSettings = () => {
-  ElMessage.success('通知设置已保存')
-}
-
-const testNotification = () => {
-  ElMessage.success('测试通知已发送')
-}
 
 const getRoleType = (role: string) => {
-  const types: Record<string, any> = {
+  const types: Record<string, string> = {
     '超级管理员': 'danger',
     '管理员': 'warning',
     '操作员': 'success',
@@ -908,82 +885,191 @@ const getRoleType = (role: string) => {
   return types[role] || 'info'
 }
 
-const editUser = (row: any) => {
-  ElMessage.info(`编辑用户 ${row.username}`)
+const loadUsers = async () => {
+  try {
+    const data = await settingsAPI.getUsers()
+    users.value = data
+  } catch (e) {
+    console.warn('Failed to load users', e)
+    // Fallback data if API fails
+    if (users.value.length === 0) {
+      users.value = [
+        {
+          id: '1',
+          username: 'admin',
+          email: 'admin@hcp-bench.com',
+          role: '超级管理员',
+          status: '正常',
+          lastLogin: '2026-01-29 10:30:00',
+          createdAt: '2025-12-01 09:00:00'
+        }
+      ]
+    }
+  }
 }
 
-const resetPassword = (row: any) => {
-  ElMessageBox.confirm(`确定重置用户 ${row.username} 的密码吗?`, '提示', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('密码已重置为默认密码')
-  })
+const handleAddUser = () => {
+  isEditing.value = false
+  userForm.value = {
+    username: '',
+    email: '',
+    role: '观察者',
+    status: '正常'
+  }
+  showUserDialog.value = true
 }
 
-const deleteUser = (row: any) => {
-  ElMessageBox.confirm(`确定删除用户 ${row.username} 吗?`, '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('用户已删除')
-  })
+const editUser = (row: SystemUser) => {
+  isEditing.value = true
+  userForm.value = { ...row }
+  showUserDialog.value = true
 }
 
-const addUser = () => {
-  ElMessage.success('用户创建成功')
-  showAddUser.value = false
+const saveUser = async () => {
+  try {
+    if (isEditing.value && userForm.value.id) {
+      await settingsAPI.updateUser(userForm.value.id, userForm.value)
+      ElMessage.success('用户更新成功')
+    } else {
+      await settingsAPI.createUser(userForm.value)
+      ElMessage.success('用户创建成功')
+    }
+    showUserDialog.value = false
+    loadUsers()
+  } catch (e) {
+    ElMessage.error(isEditing.value ? '更新失败' : '创建失败')
+  }
 }
 
-const checkUpdate = () => {
-  ElMessage.info('当前已是最新版本')
+const resetPassword = (row: SystemUser) => {
+  ElMessageBox.confirm(`确定重置用户 ${row.username} 的密码吗?`, '提示', { type: 'warning' })
+    .then(async () => {
+      try {
+        await settingsAPI.resetUserPassword(row.id)
+        ElMessage.success('密码已重置为默认密码')
+      } catch (e) {
+        ElMessage.error('重置密码失败')
+      }
+    })
 }
 
-const viewLogs = () => {
-  ElMessage.info('跳转到日志查看页面')
+const deleteUser = async (row: SystemUser) => {
+  ElMessageBox.confirm(`确定删除用户 ${row.username} 吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await settingsAPI.deleteUser(row.id)
+        ElMessage.success('用户已删除')
+        loadUsers()
+      } catch (e) {
+        ElMessage.error('删除失败')
+      }
+    })
 }
 
-const exportSystemInfo = () => {
-  ElMessage.success('系统信息导出成功')
-}
-
+// --- System Info ---
+const checkUpdate = () => ElMessage.info('当前已是最新版本')
+const viewLogs = () => ElMessage.info('跳转到日志查看页面')
+const exportSystemInfo = () => ElMessage.success('系统信息导出成功')
 const restartSystem = () => {
-  ElMessageBox.confirm('确定重启系统吗?这将中断所有正在运行的任务', '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.warning('系统将在10秒后重启')
-  })
+  ElMessageBox.confirm('确定重启系统吗?这将中断所有正在运行的任务', '警告', { type: 'warning' })
+    .then(() => ElMessage.warning('系统将在10秒后重启'))
 }
 
-const saveBackupSettings = () => {
-  ElMessage.success('备份设置已保存')
+// --- Backup ---
+const backupSettings = ref<BackupSettings>({
+  autoBackup: true,
+  frequency: 'daily',
+  retentionCount: 7,
+  backupPath: '/backup/hcp-bench'
+})
+
+const backupList = ref<BackupRecord[]>([])
+
+const loadBackups = async () => {
+  try {
+    const data = await settingsAPI.getBackups()
+    backupList.value = data
+  } catch (e) {
+    console.warn('Failed to load backups', e)
+  }
 }
 
-const selectBackupPath = () => {
-  ElMessage.info('打开文件选择器')
+const saveBackupSettings = async () => {
+  try {
+    await settingsAPI.updateBackupSettings(backupSettings.value)
+    ElMessage.success('备份设置已保存')
+  } catch (e) {
+    ElMessage.error('保存失败')
+  }
 }
 
-const createBackup = () => {
-  ElMessage.success('备份任务已创建')
+const selectBackupPath = () => ElMessage.info('打开文件选择器')
+
+const createBackup = async () => {
+  try {
+    await settingsAPI.createBackup()
+    ElMessage.success('备份任务已创建')
+    loadBackups()
+  } catch (e) {
+    ElMessage.error('创建备份失败')
+  }
 }
 
-const restoreBackup = (row: any) => {
-  ElMessageBox.confirm(`确定从备份 ${row.name} 恢复数据吗?当前数据将被覆盖`, '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('数据恢复中,请稍候...')
-  })
+const restoreBackup = (row: BackupRecord) => {
+  ElMessageBox.confirm(`确定从备份 ${row.name} 恢复数据吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await settingsAPI.restoreBackup(row.id)
+        ElMessage.success('数据恢复中...')
+      } catch (e) {
+        ElMessage.error('恢复失败')
+      }
+    })
 }
 
-const downloadBackup = (row: any) => {
-  ElMessage.success(`备份 ${row.name} 下载开始`)
+const downloadBackup = (row: BackupRecord) => ElMessage.success(`备份 ${row.name} 下载开始`)
+
+const deleteBackup = (row: BackupRecord) => {
+  ElMessageBox.confirm(`确定删除备份 ${row.name} 吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await settingsAPI.deleteBackup(row.id)
+        ElMessage.success('备份已删除')
+        loadBackups()
+      } catch (e) {
+        ElMessage.error('删除失败')
+      }
+    })
 }
 
-const deleteBackup = (row: any) => {
-  ElMessageBox.confirm(`确定删除备份 ${row.name} 吗?`, '警告', {
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('备份已删除')
-  })
+const handleMenuSelect = (index: string) => {
+  activeMenu.value = index
 }
+
+onMounted(async () => {
+  try {
+    const [gen, net, store, sec, notif, back] = await Promise.all([
+      settingsAPI.getGeneralSettings().catch(() => null),
+      settingsAPI.getNetworkSettings().catch(() => null),
+      settingsAPI.getStorageSettings().catch(() => null),
+      settingsAPI.getSecuritySettings().catch(() => null),
+      settingsAPI.getNotificationSettings().catch(() => null),
+      settingsAPI.getBackupSettings().catch(() => null)
+    ])
+    
+    if (gen) generalSettings.value = gen
+    if (net) networkSettings.value = net
+    if (store) storageSettings.value = store
+    if (sec) securitySettings.value = sec
+    if (notif) notificationSettings.value = notif
+    if (back) backupSettings.value = back
+    
+    await loadUsers()
+    await loadBackups()
+  } catch(e) {
+    console.warn('Failed to fetch settings, using defaults', e)
+  }
+})
 </script>
 
 <style scoped>

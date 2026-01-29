@@ -1,5 +1,5 @@
 import http from './http'
-import type { PerformanceSummary } from '@/types'
+import type { PerformanceSummary, AlgorithmComparisonData, PerformanceLimitData } from '@/types'
 
 /**
  * 获取性能摘要
@@ -16,8 +16,15 @@ export const getPerformanceSummary = (params: {
 export const getAlgorithmComparison = (params?: {
   startTime?: string
   endTime?: string
-}): Promise<any> =>
+  algorithms?: string[]
+}): Promise<AlgorithmComparisonData[]> =>
   http.get('/analysis/comparison', { params })
+
+/**
+ * 获取性能界限分析
+ */
+export const getPerformanceLimits = (algorithm: string): Promise<PerformanceLimitData[]> =>
+  http.get(`/analysis/limits/${algorithm}`)
 
 /**
  * 生成报告
