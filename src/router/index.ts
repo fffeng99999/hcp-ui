@@ -30,7 +30,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'benchmarks',
         name: 'Benchmarks',
-        component: () => import('@/views/Transaction/index.vue'),
+        component: () => import('@/views/Benchmarks/index.vue'),
         meta: {
           title: 'Load Test Tasks',
           icon: 'document',
@@ -48,19 +48,9 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'policy',
-        name: 'PolicyManagement',
-        component: () => import('@/views/Policy/Config.vue'),
-        meta: {
-          title: 'Anti-Manipulation Strategy',
-          icon: 'shield',
-          requiresAuth: true
-        }
-      },
-      {
         path: 'policies',
-        name: 'PolicyManagement',
-        component: () => import('@/views/Policy/Config.vue'),
+        name: 'Policies',
+        component: () => import('@/views/Policies/index.vue'),
         meta: {
           title: 'Anti-Manipulation Strategy',
           icon: 'shield',
@@ -70,7 +60,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'metrics',
         name: 'Metrics',
-        component: () => import('@/views/Dashboard/Metrics.vue'),
+        component: () => import('@/views/Metrics/index.vue'),
         meta: {
           title: 'Monitoring & Metrics',
           icon: 'chart-bar',
