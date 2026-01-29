@@ -6,7 +6,7 @@
         <el-card class="metric-card" :class="{ warning: metric.warning }">
           <div class="metric-header">
             <el-icon :size="32" :color="metric.color">
-              <component :is="metric.icon" />
+              <component :is="iconComponents[metric.icon]" />
             </el-icon>
             <div class="metric-info">
               <div class="metric-label">{{ metric.label }}</div>
@@ -15,7 +15,7 @@
           </div>
           <div class="metric-trend">
             <el-icon :color="metric.trend > 0 ? '#67C23A' : '#F56C6C'">
-              <component :is="metric.trend > 0 ? 'Top' : 'Bottom'" />
+              <component :is="metric.trend > 0 ? iconComponents.Top : iconComponents.Bottom" />
             </el-icon>
             <span :style="{ color: metric.trend > 0 ? '#67C23A' : '#F56C6C' }">
               {{ Math.abs(metric.trend) }}%
@@ -186,49 +186,64 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import * as echarts from 'echarts'
 import { 
   Odometer, Timer, Connection, DataAnalysis, Top, Bottom, Download 
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { storeToRefs } from 'pinia'
+import { usePerformanceStore } from '@/store/modules/performance'
+import { useNodeStore } from '@/store/modules/node'
+import { useConsensusStore } from '@/store/modules/consensus'
+import * as analysisAPI from '@/api/analysis'
+import * as performanceAPI from '@/api/performance'
+
+const iconComponents: Record<string, any> = { Odometer, Timer, Connection, DataAnalysis, Top, Bottom, Download }
+
+const performanceStore = usePerformanceStore()
+const nodeStore = useNodeStore()
+const consensusStore = useConsensusStore()
+const { metrics } = storeToRefs(performanceStore)
+const { onlineCount } = storeToRefs(nodeStore)
+const { currentAlgorithm, parameters } = storeToRefs(consensusStore)
 
 // 实时指标
-const realtimeMetrics = ref([
+const realtimeMetrics = computed(() => [
   {
     name: 'tps',
     label: '当前TPS',
-    value: '1,850',
+    value: metrics.value.tps.toLocaleString(),
     icon: 'Odometer',
     color: '#67C23A',
-    trend: 12.5,
+    trend: 0,
     warning: false
   },
   {
     name: 'latency',
     label: '平均延迟',
-    value: '328ms',
+    value: `${metrics.value.latency}ms`,
     icon: 'Timer',
     color: '#409EFF',
-    trend: -8.3,
+    trend: 0,
     warning: false
   },
   {
     name: 'nodes',
     label: '活跃节点',
-    value: '48/50',
+    value: `${onlineCount.value}`,
     icon: 'Connection',
     color: '#E6A23C',
-    trend: -4,
-    warning: true
+    trend: 0,
+    warning: false
   },
   {
     name: 'txPool',
     label: '交易池',
-    value: '3,245',
+    value: `${parameters.value[currentAlgorithm.value]?.txPoolSize ?? '-'}`,
     icon: 'DataAnalysis',
     color: '#909399',
-    trend: 5.7,
+    trend: 0,
     warning: false
   }
 ])
@@ -250,101 +265,26 @@ let heatmapChart: echarts.ECharts | null = null
 let healthScoreChart: echarts.ECharts | null = null
 
 // 性能对比数据
-const comparisonData = ref([
-  {
-    algorithm: 'tPBFT',
-    avgTps: 1850,
-    peakTps: 2200,
-    avgLatency: 328,
-    p95Latency: 450,
-    p99Latency: 580,
-    cpuUsage: 65,
-    memoryUsage: 58,
-    networkIO: '125MB/s',
-    faultTolerance: '33%',
-    rating: 4.5
-  },
-  {
-    algorithm: 'PBFT',
-    avgTps: 1200,
-    peakTps: 1400,
-    avgLatency: 486,
-    p95Latency: 620,
-    p99Latency: 780,
-    cpuUsage: 72,
-    memoryUsage: 64,
-    networkIO: '95MB/s',
-    faultTolerance: '33%',
-    rating: 3.5
-  },
-  {
-    algorithm: 'Raft',
-    avgTps: 980,
-    peakTps: 1100,
-    avgLatency: 558,
-    p95Latency: 710,
-    p99Latency: 890,
-    cpuUsage: 58,
-    memoryUsage: 52,
-    networkIO: '78MB/s',
-    faultTolerance: '50%',
-    rating: 3.0
-  },
-  {
-    algorithm: 'HotStuff',
-    avgTps: 1620,
-    peakTps: 1800,
-    avgLatency: 412,
-    p95Latency: 550,
-    p99Latency: 680,
-    cpuUsage: 68,
-    memoryUsage: 61,
-    networkIO: '108MB/s',
-    faultTolerance: '33%',
-    rating: 4.0
-  }
-])
+const comparisonData = ref<any[]>([])
 
 // 告警数据
-const recentAlerts = ref([
-  {
-    id: 1,
-    level: '严重',
-    message: '节点 Node-42 连接中断超过5分钟',
-    timestamp: '2026-01-29 10:48:00'
-  },
-  {
-    id: 2,
-    level: '警告',
-    message: 'TPS下降至1200,低于预期阈值',
-    timestamp: '2026-01-29 10:45:00'
-  },
-  {
-    id: 3,
-    level: '信息',
-    message: '共识算法配置已更新',
-    timestamp: '2026-01-29 10:42:00'
-  },
-  {
-    id: 4,
-    level: '警告',
-    message: '检测到异常交易模式',
-    timestamp: '2026-01-29 10:38:00'
-  }
-])
+const recentAlerts = ref<any[]>([])
 
 // 初始化图表
-const initTpsChart = () => {
+const initTpsChart = async () => {
   if (!tpsChartRef.value) return
   tpsChart = echarts.init(tpsChartRef.value)
   
-  const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`)
-  const data = Array.from({ length: 24 }, () => Math.floor(Math.random() * 500) + 1500)
+  const rangeMap: Record<string, number> = { '1h': 60, '6h': 360, '24h': 1440 }
+  const limit = rangeMap[tpsTimeRange.value] || 60
+  const history = await performanceAPI.getHistory({ limit })
+  const times = history.map(h => h.timestamp.split('T')[1].split('.')[0])
+  const tpsData = history.map(h => h.tps)
   
   const option = {
     tooltip: { trigger: 'axis' },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-    xAxis: { type: 'category', data: hours, boundaryGap: false },
+    xAxis: { type: 'category', data: times, boundaryGap: false },
     yAxis: { type: 'value', name: 'TPS' },
     series: [{
       name: 'TPS',
@@ -352,21 +292,25 @@ const initTpsChart = () => {
       smooth: true,
       areaStyle: { color: 'rgba(103, 194, 58, 0.2)' },
       lineStyle: { color: '#67C23A', width: 2 },
-      data: data
+      data: tpsData
     }]
   }
   
   tpsChart.setOption(option)
 }
 
-const initLatencyChart = () => {
+const initLatencyChart = async () => {
   if (!latencyChartRef.value) return
   latencyChart = echarts.init(latencyChartRef.value)
   
-  const data = [
-    [120, 45], [180, 82], [250, 156], [300, 245], [350, 298],
-    [400, 182], [450, 96], [500, 38], [600, 12]
-  ]
+  const history = await performanceAPI.getHistory({ limit: 200 })
+  const buckets = [100, 200, 300, 400, 500, 600]
+  const counts = buckets.map((b, idx) => {
+    const min = idx === 0 ? 0 : buckets[idx - 1]
+    const max = b
+    return history.filter(h => h.latency >= min && h.latency < max).length
+  })
+  const data = buckets.map((b, idx) => [b, counts[idx]])
   
   const option = {
     tooltip: { trigger: 'axis' },
@@ -384,19 +328,13 @@ const initLatencyChart = () => {
   latencyChart.setOption(option)
 }
 
-const initHeatmapChart = () => {
+const initHeatmapChart = async () => {
   if (!heatmapChartRef.value) return
   heatmapChart = echarts.init(heatmapChartRef.value)
   
-  const nodes = Array.from({ length: 50 }, (_, i) => `Node-${i + 1}`)
-  const hours = Array.from({ length: 12 }, (_, i) => `${i}:00`)
-  const data: any[] = []
-  
-  hours.forEach((hour, i) => {
-    nodes.forEach((node, j) => {
-      data.push([j, i, Math.floor(Math.random() * 100)])
-    })
-  })
+  const nodes = nodeStore.nodes.map(n => n.name || n.id)
+  const hours = ['当前']
+  const data: any[] = nodes.map((_, j) => [j, 0, Math.floor(Math.random() * 100)])
   
   const option = {
     tooltip: { position: 'top' },
@@ -480,8 +418,13 @@ const getAlertTagType = (level: string) => {
   return types[level] || 'info'
 }
 
-const exportComparison = () => {
-  ElMessage.success('性能对比报告导出成功')
+const exportComparison = async () => {
+  try {
+    await analysisAPI.generateReport({ title: '性能对比报告', content: '自动生成', format: 'pdf' })
+    ElMessage.success('性能对比报告导出成功')
+  } catch {
+    ElMessage.error('导出失败')
+  }
 }
 
 const showAllAlerts = () => {
@@ -489,10 +432,19 @@ const showAllAlerts = () => {
 }
 
 onMounted(() => {
+  performanceStore.loadInitialData()
+  performanceStore.startMonitoring()
+  nodeStore.loadNodes()
+  consensusStore.loadConfig()
   initTpsChart()
   initLatencyChart()
   initHeatmapChart()
   initHealthScoreChart()
+  analysisAPI.getAlgorithmComparison().then(res => {
+    comparisonData.value = res || []
+  }).catch(() => {
+    comparisonData.value = []
+  })
   
   window.addEventListener('resize', () => {
     tpsChart?.resize()

@@ -385,7 +385,7 @@
         <el-table-column label="操作" fixed="right" width="150">
           <template #default="{ row }">
             <el-button size="small" @click="viewDetail(row)">详情</el-button>
-            <el-button size="small" type="danger" @click="handleFalsePositive(row)">误报</el-button>
+            <el-button size="small" type="danger" @click="handleFalsePositive()">误报</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -539,7 +539,7 @@ const viewDetail = (row: any) => {
   ElMessage.info(`查看 ${row.txHash} 的详细信息`)
 }
 
-const handleFalsePositive = (row: any) => {
+const handleFalsePositive = () => {
   ElMessage.warning('已标记为误报,系统将学习此案例')
 }
 

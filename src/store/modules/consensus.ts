@@ -12,32 +12,7 @@ import type {
 } from '@/types'
 
 export const useConsensusStore = defineStore('consensus', () => {
-  const algorithms = ref<ConsensusAlgorithm[]>([
-    {
-      id: 'tPBFT',
-      name: 'tPBFT (Optimized PBFT)',
-      description: 'Enhanced PBFT with dynamic node selection and hash verification',
-      category: 'BFT-based'
-    },
-    {
-      id: 'PBFT',
-      name: 'PBFT (Classic)',
-      description: 'Classic Practical Byzantine Fault Tolerance',
-      category: 'BFT-based'
-    },
-    {
-      id: 'HotStuff',
-      name: 'HotStuff',
-      description: 'Linear time Byzantine-safe consensus',
-      category: 'Modern'
-    },
-    {
-      id: 'Leios',
-      name: 'Leios',
-      description: 'High-throughput consensus protocol',
-      category: 'Modern'
-    }
-  ])
+  const algorithms = ref<ConsensusAlgorithm[]>([])
 
   const currentAlgorithm = ref<ConsensusAlgorithmType>('tPBFT')
 
@@ -46,7 +21,29 @@ export const useConsensusStore = defineStore('consensus', () => {
       f: 66,
       nodeSelectionMethod: 'equity',
       hashVerification: true,
-      maxRound: 3
+      maxRound: 3,
+      viewChangeTimeout: 10000,
+      blockInterval: 3,
+      maxBlockSize: 4,
+      txPoolSize: 50000,
+      minNodes: 10,
+      consensusTimeout: 15000,
+      confirmations: 6,
+      networkLatency: 500,
+      batchSize: 1000,
+      dynamicNodeSelection: true,
+      reputationThreshold: 70,
+      parallelValidation: true,
+      adaptiveTimeout: true,
+      checkpointInterval: 100,
+      preExecution: true,
+      compressionAlgo: 'snappy',
+      cacheOptions: ['transaction', 'signature'],
+      pipelineDepth: 5,
+      memPoolSize: 2048,
+      networkOptimizations: ['tcp-nodelay', 'multicast'],
+      ioThreads: 8,
+      cpuAffinity: true
     } as TPBFTParameters,
     PBFT: {
       f: 66,
@@ -120,6 +117,36 @@ export const useConsensusStore = defineStore('consensus', () => {
     }
   }
 
+  async function loadAlgorithms(): Promise<void> {
+    try {
+      isLoading.value = true
+      error.value = null
+      const algos = await consensusAPI.getAlgorithms()
+      const iconMap: Record<string, string> = {
+        tPBFT: 'Checked',
+        PBFT: 'Setting',
+        HotStuff: 'DataLine',
+        Leios: 'Document'
+      }
+      const colorMap: Record<string, string> = {
+        tPBFT: '#67C23A',
+        PBFT: '#E6A23C',
+        HotStuff: '#F56C6C',
+        Leios: '#409EFF'
+      }
+      algorithms.value = algos.map(a => ({
+        ...a,
+        icon: a.icon || iconMap[a.id] || 'QuestionFilled',
+        color: a.color || colorMap[a.id] || '#909399'
+      }))
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to load algorithms'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   return {
     // State
     algorithms,
@@ -135,6 +162,7 @@ export const useConsensusStore = defineStore('consensus', () => {
     // Methods
     selectAlgorithm,
     updateParameter,
-    loadConfig
+    loadConfig,
+    loadAlgorithms
   }
 })

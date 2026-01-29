@@ -12,16 +12,50 @@ export interface ConsensusAlgorithm {
   name: string
   description: string
   category: 'BFT-based' | 'Modern'
+  icon?: string
+  color?: string
+  avgLatency?: number
+  peakTps?: number
+  faultTolerance?: string
+  recommended?: boolean
+}
+
+/**
+ * Common Consensus Parameters
+ */
+export interface CommonConsensusParameters {
+  viewChangeTimeout: number
+  blockInterval: number
+  maxBlockSize: number
+  txPoolSize: number
+  minNodes: number
+  consensusTimeout: number
+  confirmations: number
+  networkLatency: number
+  batchSize: number
 }
 
 /**
  * tPBFT 参数
  */
-export interface TPBFTParameters {
+export interface TPBFTParameters extends CommonConsensusParameters {
   f: number
   nodeSelectionMethod: 'equity' | 'random' | 'fixed'
   hashVerification: boolean
   maxRound: number
+  dynamicNodeSelection: boolean
+  reputationThreshold: number
+  parallelValidation: boolean
+  adaptiveTimeout: boolean
+  checkpointInterval: number
+  preExecution: boolean
+  compressionAlgo: string
+  cacheOptions: string[]
+  pipelineDepth: number
+  memPoolSize: number
+  networkOptimizations: string[]
+  ioThreads: number
+  cpuAffinity: boolean
 }
 
 /**

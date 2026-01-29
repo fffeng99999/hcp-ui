@@ -151,18 +151,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import * as echarts from 'echarts'
 import { Timer, Odometer, Connection, DocumentCopy, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { usePerformanceStore } from '@/store/modules/performance'
+import { useBenchmarkStore } from '@/store/modules/benchmark'
+import { useNodeStore } from '@/store/modules/node'
+import { useConsensusStore } from '@/store/modules/consensus'
+
+const performanceStore = usePerformanceStore()
+const benchmarkStore = useBenchmarkStore()
+const nodeStore = useNodeStore()
+const consensusStore = useConsensusStore()
 
 // 核心性能指标
-const metrics = ref({
-  avgLatency: 328,
-  throughput: 1850,
-  nodeCount: 50,
-  consensusType: 'tPBFT'
-})
+const metrics = computed(() => ({
+  avgLatency: performanceStore.metrics.latency,
+  throughput: performanceStore.metrics.tps,
+  nodeCount: nodeStore.onlineCount,
+  consensusType: consensusStore.currentAlgorithm
+}))
 
 // 图表实例引用
 const latencyChartRef = ref<HTMLElement>()
@@ -179,81 +188,48 @@ let performanceLimitChart: echarts.ECharts | null = null
 const selectedConsensus = ref('tPBFT')
 
 // 测试任务数据
-const testTasks = ref([
-  {
-    id: 'TEST-001',
-    name: 'tPBFT高频交易压测',
-    consensus: 'tPBFT',
-    nodes: 50,
-    status: '运行中',
-    avgLatency: 328,
-    tps: 1850,
-    createdAt: '2026-01-28 14:30:00'
-  },
-  {
-    id: 'TEST-002',
-    name: 'PBFT基准测试',
-    consensus: 'PBFT',
-    nodes: 30,
-    status: '已完成',
-    avgLatency: 486,
-    tps: 1200,
-    createdAt: '2026-01-27 10:15:00'
-  },
-  {
-    id: 'TEST-003',
-    name: 'Raft延迟对比',
-    consensus: 'Raft',
-    nodes: 20,
-    status: '等待中',
-    avgLatency: null,
-    tps: null,
-    createdAt: '2026-01-29 09:00:00'
-  }
-])
+const testTasks = computed(() => benchmarkStore.tasks.slice(0, 5)) // Show top 5 tasks
 
 // 初始化延迟趋势图
 const initLatencyChart = () => {
   if (!latencyChartRef.value) return
   latencyChart = echarts.init(latencyChartRef.value)
   
-  const option = {
-    tooltip: { trigger: 'axis' },
-    legend: { data: ['tPBFT', 'PBFT', 'Raft'] },
-    xAxis: {
-      type: 'category',
-      data: ['0s', '10s', '20s', '30s', '40s', '50s', '60s']
-    },
-    yAxis: {
-      type: 'value',
-      name: '延迟(ms)'
-    },
-    series: [
-      {
-        name: 'tPBFT',
-        type: 'line',
-        smooth: true,
-        data: [320, 328, 315, 340, 325, 330, 328],
-        itemStyle: { color: '#409EFF' }
+  const updateChart = () => {
+    const history = performanceStore.history.slice(-60) // Last 60 points
+    const times = history.map(h => h.timestamp.split('T')[1].split('.')[0])
+    const latencies = history.map(h => h.latency)
+
+    const option = {
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['Latency'] },
+      xAxis: {
+        type: 'category',
+        data: times
       },
-      {
-        name: 'PBFT',
-        type: 'line',
-        smooth: true,
-        data: [480, 490, 475, 500, 485, 495, 486],
-        itemStyle: { color: '#E6A23C' }
+      yAxis: {
+        type: 'value',
+        name: '延迟(ms)'
       },
-      {
-        name: 'Raft',
-        type: 'line',
-        smooth: true,
-        data: [550, 560, 545, 575, 555, 565, 558],
-        itemStyle: { color: '#F56C6C' }
-      }
-    ]
+      series: [
+        {
+          name: 'Latency',
+          type: 'line',
+          smooth: true,
+          data: latencies,
+          itemStyle: { color: '#409EFF' }
+        }
+      ]
+    }
+    latencyChart?.setOption(option)
   }
+
+  updateChart()
   
-  latencyChart.setOption(option)
+  // Watch for history updates
+  watch(() => performanceStore.history, () => {
+    updateChart()
+  }, { deep: true })
 }
 
 // 初始化TPS对比图
@@ -261,6 +237,7 @@ const initTpsChart = () => {
   if (!tpsChartRef.value) return
   tpsChart = echarts.init(tpsChartRef.value)
   
+  // FIXME: This should ideally come from backend analysis data
   const option = {
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
     legend: { data: ['tPBFT', 'PBFT'] },
@@ -296,31 +273,43 @@ const initNodeStatusChart = () => {
   if (!nodeStatusChartRef.value) return
   nodeStatusChart = echarts.init(nodeStatusChartRef.value)
   
-  const option = {
-    tooltip: { trigger: 'item' },
-    legend: { orient: 'vertical', left: 'left' },
-    series: [
-      {
-        name: '节点状态',
-        type: 'pie',
-        radius: '60%',
-        data: [
-          { value: 45, name: '正常运行', itemStyle: { color: '#67C23A' } },
-          { value: 3, name: '高负载', itemStyle: { color: '#E6A23C' } },
-          { value: 2, name: '离线', itemStyle: { color: '#F56C6C' } }
-        ],
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
+  const updateChart = () => {
+    const online = nodeStore.onlineCount
+    const offline = nodeStore.offlineCount
+    const total = nodeStore.nodes.length
+    const faulty = total - online - offline // Assuming faulty is the rest, or we check status 'faulty'
+
+    const option = {
+      tooltip: { trigger: 'item' },
+      legend: { orient: 'vertical', left: 'left' },
+      series: [
+        {
+          name: '节点状态',
+          type: 'pie',
+          radius: '60%',
+          data: [
+            { value: online, name: '正常运行', itemStyle: { color: '#67C23A' } },
+            { value: faulty, name: '异常/高负载', itemStyle: { color: '#E6A23C' } },
+            { value: offline, name: '离线', itemStyle: { color: '#F56C6C' } }
+          ],
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
           }
         }
-      }
-    ]
+      ]
+    }
+    nodeStatusChart?.setOption(option)
   }
+
+  updateChart()
   
-  nodeStatusChart.setOption(option)
+  watch(() => nodeStore.nodes, () => {
+    updateChart()
+  }, { deep: true })
 }
 
 // 初始化性能界限分析图
@@ -350,8 +339,7 @@ const initPerformanceLimitChart = () => {
         name: '理论上限',
         type: 'line',
         data: [[10, 3500], [30, 2800], [50, 2400], [100, 1800], [200, 1200]],
-        lineStyle: { type: 'dashed' },
-        itemStyle: { color: '#F56C6C' }
+        itemStyle: { color: '#909399', type: 'dashed' }
       }
     ]
   }
@@ -359,56 +347,79 @@ const initPerformanceLimitChart = () => {
   performanceLimitChart.setOption(option)
 }
 
-// 获取状态标签类型
-const getStatusType = (status: string) => {
-  const typeMap: Record<string, any> = {
-    '运行中': 'success',
-    '已完成': 'info',
-    '等待中': 'warning',
-    '失败': 'danger'
-  }
-  return typeMap[status] || 'info'
-}
-
-// 操作方法
 const createNewTest = () => {
-  ElMessage.info('跳转到测试配置页面')
+  // Logic to navigate to benchmark creation or open modal
+  ElMessage.info('请前往测试任务页面创建新任务')
 }
 
-const viewDetails = (row: any) => {
-  ElMessage.info(`查看测试 ${row.id} 的详细信息`)
+const viewDetails = (task: any) => {
+  console.log('View details', task)
 }
 
-const startTest = (row: any) => {
-  ElMessage.success(`启动测试任务 ${row.id}`)
+const startTest = async (task: any) => {
+  try {
+    await benchmarkStore.startTask(task.id)
+    ElMessage.success('任务已启动')
+  } catch (error) {
+    ElMessage.error('启动失败')
+  }
 }
 
-const deleteTest = (row: any) => {
-  ElMessage.warning(`删除测试任务 ${row.id}`)
+const deleteTest = async (task: any) => {
+  try {
+    await benchmarkStore.deleteTask(task.id)
+    ElMessage.success('任务已删除')
+  } catch (error) {
+    ElMessage.error('删除失败')
+  }
 }
 
-// 生命周期
-onMounted(() => {
+const getStatusType = (status: string) => {
+  const map: Record<string, string> = {
+    'running': 'success',
+    'completed': 'info',
+    'waiting': 'warning',
+    'failed': 'danger',
+    'paused': 'warning'
+  }
+  return map[status] || 'info'
+}
+
+onMounted(async () => {
+  // Load initial data
+  await Promise.all([
+    performanceStore.loadInitialData(),
+    benchmarkStore.loadTasks(),
+    nodeStore.loadNodes(),
+    consensusStore.loadConfig()
+  ])
+
+  performanceStore.startMonitoring()
+  
   initLatencyChart()
   initTpsChart()
   initNodeStatusChart()
   initPerformanceLimitChart()
   
-  // 响应式处理
-  window.addEventListener('resize', () => {
-    latencyChart?.resize()
-    tpsChart?.resize()
-    nodeStatusChart?.resize()
-    performanceLimitChart?.resize()
-  })
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
+  performanceStore.stopMonitoring()
+  window.removeEventListener('resize', handleResize)
+  
   latencyChart?.dispose()
   tpsChart?.dispose()
   nodeStatusChart?.dispose()
   performanceLimitChart?.dispose()
 })
+
+const handleResize = () => {
+  latencyChart?.resize()
+  tpsChart?.resize()
+  nodeStatusChart?.resize()
+  performanceLimitChart?.resize()
+}
 </script>
 
 <style scoped>

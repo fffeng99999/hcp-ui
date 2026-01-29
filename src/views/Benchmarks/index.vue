@@ -266,21 +266,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, VideoPlay, VideoPause, Delete, Search, Close, View, 
   CopyDocument 
 } from '@element-plus/icons-vue'
+import { useBenchmarkStore } from '@/store/modules/benchmark'
+import type { BenchmarkTask } from '@/types/benchmark'
+
+const store = useBenchmarkStore()
+const { tasks, isLoading: loading } = storeToRefs(store)
 
 // 状态数据
-const loading = ref(false)
 const searchQuery = ref('')
 const taskFilter = ref('all')
 const currentPage = ref(1)
 const pageSize = ref(20)
 const totalTasks = ref(0)
-const selectedTasks = ref<any[]>([])
+const selectedTasks = ref<BenchmarkTask[]>([])
 const showCreateDialog = ref(false)
 const taskFormRef = ref()
 
@@ -297,49 +302,6 @@ const newTask = ref({
   description: ''
 })
 
-// 任务列表
-const tasks = ref([
-  {
-    id: 'TASK-2026012901',
-    name: 'tPBFT高频交易压测-50节点',
-    consensus: 'tPBFT',
-    nodeCount: 50,
-    txRate: 1000,
-    duration: 60,
-    status: '运行中',
-    progress: 45,
-    currentTps: 1850,
-    currentLatency: 328,
-    createdAt: '2026-01-29 09:30:00'
-  },
-  {
-    id: 'TASK-2026012802',
-    name: 'PBFT基准性能测试',
-    consensus: 'PBFT',
-    nodeCount: 30,
-    txRate: 800,
-    duration: 120,
-    status: '已完成',
-    progress: 100,
-    currentTps: 1200,
-    currentLatency: 486,
-    createdAt: '2026-01-28 14:20:00'
-  },
-  {
-    id: 'TASK-2026012803',
-    name: 'Raft共识延迟对比',
-    consensus: 'Raft',
-    nodeCount: 20,
-    txRate: 500,
-    duration: 30,
-    status: '等待中',
-    progress: 0,
-    currentTps: null,
-    currentLatency: null,
-    createdAt: '2026-01-28 16:45:00'
-  }
-])
-
 // 表单验证规则
 const taskRules = {
   name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
@@ -353,12 +315,7 @@ const filteredTasks = computed(() => {
   let result = tasks.value
   
   if (taskFilter.value !== 'all') {
-    const statusMap: Record<string, string> = {
-      running: '运行中',
-      completed: '已完成',
-      failed: '失败'
-    }
-    result = result.filter(t => t.status === statusMap[taskFilter.value])
+    result = result.filter(t => t.status === taskFilter.value)
   }
   
   if (searchQuery.value) {
@@ -384,11 +341,11 @@ const getConsensusColor = (consensus: string) => {
 
 const getStatusType = (status: string) => {
   const types: Record<string, any> = {
-    '运行中': 'success',
-    '已完成': 'info',
-    '等待中': 'warning',
-    '失败': 'danger',
-    '暂停': 'warning'
+    'running': 'success',
+    'completed': 'info',
+    'waiting': 'warning',
+    'failed': 'danger',
+    'paused': 'warning'
   }
   return types[status] || 'info'
 }
@@ -400,67 +357,134 @@ const formatDuration = (minutes: number) => {
   return `${minutes}分钟`
 }
 
-const handleSelectionChange = (selection: any[]) => {
+const handleSelectionChange = (selection: BenchmarkTask[]) => {
   selectedTasks.value = selection
 }
 
 const createTask = async () => {
-  await taskFormRef.value?.validate()
-  ElMessage.success('任务创建成功')
-  showCreateDialog.value = false
+  if (!taskFormRef.value) return
+  await taskFormRef.value.validate()
+  try {
+    await store.createTask(newTask.value)
+    ElMessage.success('任务创建成功')
+    showCreateDialog.value = false
+    // Reset form
+    newTask.value = {
+      name: '',
+      consensus: 'tPBFT',
+      nodeCount: 50,
+      txRate: 1000,
+      duration: 60,
+      txSize: 1024,
+      loadType: 'constant',
+      antiManipulation: true,
+      description: ''
+    }
+  } catch (error) {
+    ElMessage.error('创建失败')
+  }
 }
 
-const startTask = (row: any) => {
-  ElMessage.success(`任务 ${row.id} 已启动`)
+const startTask = async (row: BenchmarkTask) => {
+  try {
+    await store.startTask(row.id)
+    ElMessage.success(`任务 ${row.id} 已启动`)
+  } catch (error) {
+    ElMessage.error('启动失败')
+  }
 }
 
-const pauseTask = (row: any) => {
-  ElMessage.info(`任务 ${row.id} 已暂停`)
+const pauseTask = async (row: BenchmarkTask) => {
+  try {
+    await store.pauseTask(row.id)
+    ElMessage.info(`任务 ${row.id} 已暂停`)
+  } catch (error) {
+    ElMessage.error('暂停失败')
+  }
 }
 
-const stopTask = (row: any) => {
+const stopTask = (row: BenchmarkTask) => {
   ElMessageBox.confirm('确定停止该任务吗?', '提示', {
     type: 'warning'
-  }).then(() => {
-    ElMessage.success('任务已停止')
+  }).then(async () => {
+    try {
+      await store.stopTask(row.id)
+      ElMessage.success('任务已停止')
+    } catch (error) {
+      ElMessage.error('停止失败')
+    }
   })
 }
 
-const deleteTask = (row: any) => {
+const deleteTask = (row: BenchmarkTask) => {
   ElMessageBox.confirm('确定删除该任务吗?', '提示', {
     type: 'warning'
-  }).then(() => {
-    ElMessage.success('任务已删除')
+  }).then(async () => {
+    try {
+      await store.deleteTask(row.id)
+      ElMessage.success('任务已删除')
+    } catch (error) {
+      ElMessage.error('删除失败')
+    }
   })
 }
 
-const viewTaskDetail = (row: any) => {
+const viewTaskDetail = (row: BenchmarkTask) => {
   ElMessage.info(`查看任务 ${row.id} 详情`)
 }
 
-const duplicateTask = (row: any) => {
+const duplicateTask = (row: BenchmarkTask) => {
+  // Logic to duplicate task
+  // For now just show message
   ElMessage.success(`已复制任务 ${row.id}`)
 }
 
-const batchStart = () => {
-  ElMessage.success(`批量启动 ${selectedTasks.value.length} 个任务`)
+const batchStart = async () => {
+  try {
+    // Implement batch start in store if needed, or loop
+    for (const task of selectedTasks.value) {
+      if (task.status === 'waiting' || task.status === 'paused') {
+        await store.startTask(task.id)
+      }
+    }
+    ElMessage.success(`批量启动 ${selectedTasks.value.length} 个任务`)
+  } catch (error) {
+    ElMessage.error('批量启动失败')
+  }
 }
 
-const batchStop = () => {
-  ElMessage.warning(`批量停止 ${selectedTasks.value.length} 个任务`)
+const batchStop = async () => {
+  try {
+    for (const task of selectedTasks.value) {
+      if (task.status === 'running') {
+        await store.stopTask(task.id)
+      }
+    }
+    ElMessage.success('批量停止完成')
+  } catch (error) {
+    ElMessage.error('批量停止失败')
+  }
 }
 
 const batchDelete = () => {
-  ElMessageBox.confirm(
-    `确定删除选中的 ${selectedTasks.value.length} 个任务吗?`, 
-    '批量删除', 
-    { type: 'warning' }
-  ).then(() => {
-    ElMessage.success('批量删除成功')
+  ElMessageBox.confirm(`确定删除选中的 ${selectedTasks.value.length} 个任务吗?`, '提示', {
+    type: 'warning'
+  }).then(async () => {
+    try {
+      for (const task of selectedTasks.value) {
+        await store.deleteTask(task.id)
+      }
+      ElMessage.success('批量删除完成')
+    } catch (error) {
+      ElMessage.error('批量删除失败')
+    }
   })
 }
-</script>
 
+onMounted(() => {
+  store.loadTasks()
+})
+</script>
 <style scoped>
 .stress-test-page {
   padding: 20px;
