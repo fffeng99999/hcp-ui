@@ -10,7 +10,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'dashboard',
         name: 'Dashboard',
-        component: () => import('@/views/Dashboard.vue'),
+        component: () => import('@/views/Dashboard/index.vue'),
         meta: {
           title: 'Dashboard',
           icon: 'dashboard',
@@ -20,7 +20,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'consensus',
         name: 'ConsensusManagement',
-        component: () => import('@/views/ConsensusManagement.vue'),
+        component: () => import('@/views/Consensus/index.vue'),
         meta: {
           title: 'Consensus Management',
           icon: 'setting',
@@ -28,11 +28,11 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'transactions',
-        name: 'TransactionManagement',
-        component: () => import('@/views/TransactionManagement.vue'),
+        path: 'benchmarks',
+        name: 'Benchmarks',
+        component: () => import('@/views/Transaction/index.vue'),
         meta: {
-          title: 'Transaction Management',
+          title: 'Load Test Tasks',
           icon: 'document',
           requiresAuth: true
         }
@@ -40,7 +40,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'nodes',
         name: 'NodeManagement',
-        component: () => import('@/views/NodeManagement.vue'),
+        component: () => import('@/views/Node/index.vue'),
         meta: {
           title: 'Node Management',
           icon: 'grid',
@@ -48,11 +48,31 @@ const routes: RouteRecordRaw[] = [
         }
       },
       {
-        path: 'analysis',
-        name: 'Analysis',
-        component: () => import('@/views/Analysis.vue'),
+        path: 'policy',
+        name: 'PolicyManagement',
+        component: () => import('@/views/Policy/Config.vue'),
         meta: {
-          title: 'Analysis & Reports',
+          title: 'Anti-Manipulation Strategy',
+          icon: 'shield',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'policies',
+        name: 'PolicyManagement',
+        component: () => import('@/views/Policy/Config.vue'),
+        meta: {
+          title: 'Anti-Manipulation Strategy',
+          icon: 'shield',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'metrics',
+        name: 'Metrics',
+        component: () => import('@/views/Dashboard/Metrics.vue'),
+        meta: {
+          title: 'Monitoring & Metrics',
           icon: 'chart-bar',
           requiresAuth: true
         }
@@ -60,7 +80,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'settings',
         name: 'Settings',
-        component: () => import('@/views/Settings.vue'),
+        component: () => import('@/views/Settings/index.vue'),
         meta: {
           title: 'Settings',
           icon: 'gear',
@@ -69,14 +89,7 @@ const routes: RouteRecordRaw[] = [
       }
     ]
   },
-  {
-    path: '/login',
-    name: 'Login',
-    component: () => import('@/views/Login/index.vue'),
-    meta: {
-      title: 'Login'
-    }
-  },
+
   {
     path: '/login',
     name: 'Login',
@@ -88,7 +101,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
-    component: () => import('@/views/NotFound.vue'),
+    component: () => import('@/views/System/NotFound.vue'),
     meta: {
       title: 'Not Found'
     }
