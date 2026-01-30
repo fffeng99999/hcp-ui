@@ -59,3 +59,10 @@ export interface ManipulationEvent {
   action: string
   status: string
 }
+
+export interface PolicyStats {
+  totalDetected: number
+  interceptionRate: number
+  falsePositiveRate: number
+  activeStrategies: number
+}

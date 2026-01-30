@@ -22,6 +22,7 @@ export const endpoints = {
   // Anti-Manipulation
   ANTI_MANIPULATION_STRATEGIES: '/anti-manipulation/strategies',
   ANTI_MANIPULATION_EVENTS: '/anti-manipulation/events',
+  ANTI_MANIPULATION_STATS: '/anti-manipulation/stats',
 
   // Metrics
   METRICS_HISTORICAL: '/metrics/historical',

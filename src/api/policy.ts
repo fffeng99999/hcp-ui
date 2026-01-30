@@ -1,9 +1,13 @@
 import http from './http'
 import { endpoints } from './config'
-import type { AntiManipulationConfig, ManipulationEvent } from '@/types'
+import type { AntiManipulationConfig, ManipulationEvent, PolicyStats } from '@/types'
 
 export const getStrategies = () => {
   return http.get<AntiManipulationConfig>(endpoints.ANTI_MANIPULATION_STRATEGIES)
+}
+
+export const getStats = () => {
+  return http.get<PolicyStats>(endpoints.ANTI_MANIPULATION_STATS)
 }
 
 export const updateStrategies = (data: AntiManipulationConfig) => {
