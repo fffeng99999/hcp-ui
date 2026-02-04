@@ -755,8 +755,8 @@ const testNetworkConnection = () => {
 
 // --- Storage Settings ---
 const storageSettings = ref<StorageSettings>({
-  dataPath: '/data/hcp-bench',
-  logPath: '/var/log/hcp-bench',
+  dataPath: '/data/hcp',
+  logPath: '/var/log/hcp',
   dbType: 'leveldb',
   cacheSize: 1024,
   compression: true,
@@ -843,7 +843,7 @@ const notificationSettings = ref<NotificationSettings>({
   emailEnabled: true,
   smtpHost: 'smtp.example.com',
   smtpPort: 587,
-  senderEmail: 'noreply@hcp-bench.com',
+  senderEmail: 'noreply@hcp.com',
   recipients: ['admin@example.com'],
   webhookEnabled: true,
   webhookUrl: 'https://api.example.com/webhook',
@@ -897,7 +897,7 @@ const loadUsers = async () => {
         {
           id: '1',
           username: 'admin',
-          email: 'admin@hcp-bench.com',
+          email: 'admin@hcp.com',
           role: '超级管理员',
           status: '正常',
           lastLogin: '2026-01-29 10:30:00',
@@ -980,7 +980,7 @@ const backupSettings = ref<BackupSettings>({
   autoBackup: true,
   frequency: 'daily',
   retentionCount: 7,
-  backupPath: '/backup/hcp-bench'
+  backupPath: '/backup/hcp'
 })
 
 const backupList = ref<BackupRecord[]>([])
