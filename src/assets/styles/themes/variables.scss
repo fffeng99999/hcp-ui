@@ -4,6 +4,9 @@
   --ios-bg-secondary: #ffffff;
   --ios-bg-tertiary: #e5e5ea;
   
+  /* Sidebar Background (10-15% darker than white) */
+  --ios-sidebar-bg: #f0f0f0;
+  
   --ios-text-primary: #000000;
   --ios-text-secondary: #8e8e93;
   --ios-text-tertiary: #c7c7cc;
@@ -56,6 +59,8 @@ html.dark {
   --ios-bg-primary: #343541;
   /* Secondary Background: Lighter Gray (Cards/Sidebar) */
   --ios-bg-secondary: #444654;
+  /* Sidebar Background (Darker than secondary) */
+  --ios-sidebar-bg: #3a3c48;
   /* Tertiary Background: Darker Gray (Inputs/Active States) */
   --ios-bg-tertiary: #202123;
   
