@@ -19,28 +19,4 @@ const handleLogin = () => {
 }
 </script>
 
-<style scoped>
-.login-container {
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--ios-bg-primary);
-}
-.login-card {
-  padding: 40px;
-  background: var(--ios-bg-secondary);
-  border-radius: 8px;
-  box-shadow: var(--ios-shadow-2);
-  text-align: center;
-}
-.btn-login {
-  margin-top: 20px;
-  padding: 10px 24px;
-  background: var(--el-color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-</style>
+<style scoped lang="scss" src="@/assets/styles/pages/login.scss"></style>

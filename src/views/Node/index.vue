@@ -127,28 +127,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.node-page {
-  padding: 20px;
-}
-.header-card {
-  margin-bottom: 20px;
-}
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-}
-.stats {
-  display: flex;
-  gap: 10px;
-}
-
-:deep(.el-card) {
-  border-radius: var(--ios-radius-l);
-  box-shadow: var(--ios-shadow-2);
-  background-color: var(--ios-bg-secondary);
-  border: 1px solid var(--ios-border-color);
-}
-</style>
+<style scoped lang="scss" src="@/assets/styles/pages/node.scss"></style>

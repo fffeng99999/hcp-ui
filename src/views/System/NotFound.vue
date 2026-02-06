@@ -6,12 +6,4 @@
   </div>
 </template>
 
-<style scoped>
-.not-found {
-  text-align: center;
-  padding: 50px;
-  background-color: var(--ios-bg-primary);
-  height: 100vh;
-  color: var(--ios-text-primary);
-}
-</style>
+<style scoped lang="scss" src="@/assets/styles/pages/not-found.scss"></style>

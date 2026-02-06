@@ -12,7 +12,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Dashboard',
         component: () => import('@/views/Dashboard/index.vue'),
         meta: {
-          title: 'Dashboard',
+          title: '仪表盘',
           icon: 'dashboard',
           requiresAuth: true
         }
@@ -22,7 +22,7 @@ const routes: RouteRecordRaw[] = [
         name: 'ConsensusManagement',
         component: () => import('@/views/Consensus/index.vue'),
         meta: {
-          title: 'Consensus Management',
+          title: '共识配置',
           icon: 'setting',
           requiresAuth: true
         }
@@ -32,7 +32,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Benchmarks',
         component: () => import('@/views/Benchmarks/index.vue'),
         meta: {
-          title: 'Load Test Tasks',
+          title: '压测任务',
           icon: 'document',
           requiresAuth: true
         }
@@ -42,7 +42,7 @@ const routes: RouteRecordRaw[] = [
         name: 'NodeManagement',
         component: () => import('@/views/Node/index.vue'),
         meta: {
-          title: 'Node Management',
+          title: '节点管理',
           icon: 'grid',
           requiresAuth: true
         }
@@ -52,7 +52,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Policies',
         component: () => import('@/views/Policies/index.vue'),
         meta: {
-          title: 'Anti-Manipulation Strategy',
+          title: '反操纵策略',
           icon: 'shield',
           requiresAuth: true
         }
@@ -62,7 +62,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Metrics',
         component: () => import('@/views/Metrics/index.vue'),
         meta: {
-          title: 'Monitoring & Metrics',
+          title: '监控指标',
           icon: 'chart-bar',
           requiresAuth: true
         }
@@ -72,7 +72,7 @@ const routes: RouteRecordRaw[] = [
         name: 'Settings',
         component: () => import('@/views/Settings/index.vue'),
         meta: {
-          title: 'Settings',
+          title: '系统设置',
           icon: 'gear',
           requiresAuth: true
         }
@@ -85,7 +85,7 @@ const routes: RouteRecordRaw[] = [
     name: 'Login',
     component: () => import('@/views/Login/index.vue'),
     meta: {
-      title: 'Login'
+      title: '登录'
     }
   },
   {
@@ -93,7 +93,7 @@ const routes: RouteRecordRaw[] = [
     name: 'NotFound',
     component: () => import('@/views/System/NotFound.vue'),
     meta: {
-      title: 'Not Found'
+      title: '页面未找到'
     }
   }
 ]

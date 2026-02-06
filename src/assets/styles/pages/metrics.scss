@@ -1,0 +1,78 @@
+.metrics-page {
+  padding: 20px;
+}
+
+.metrics-overview {
+  margin-bottom: 20px;
+}
+
+.metric-card {
+  transition: all 0.3s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--ios-shadow-2);
+  }
+
+  &.warning {
+    border-left: 4px solid #E6A23C;
+  }
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.metric-info {
+  flex: 1;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: var(--ios-text-secondary);
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--ios-text-primary);
+}
+
+.metric-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.trend-label {
+  color: var(--ios-text-tertiary);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+}
+
+.health-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.health-item span {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--ios-text-secondary);
+}
+
+.alert-badge {
+  margin-left: 12px;
+}

@@ -1,0 +1,47 @@
+.dashboard {
+  /* 使用 Flex 列布局，确保垂直方向的堆叠和间距 */
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px; /* Added padding to prevent edge touching and horizontal scroll */
+  padding-bottom: 40px;
+}
+
+/* 移除旧的 margin-bottom，改用 gap 控制间距 */
+.dashboard-section {
+  width: 100%;
+}
+
+.mb-4 {
+  margin-bottom: 16px;
+}
+@media (min-width: 992px) {
+  .mb-4 {
+    margin-bottom: 0;
+  }
+}
+
+/* 强制 el-row 使用 flex 布局，防止浮动塌陷 */
+:deep(.flex-row) {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ios-border-color);
+
+  h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    color: var(--ios-text-primary);
+  }
+}

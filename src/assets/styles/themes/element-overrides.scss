@@ -17,27 +17,27 @@
   border: none;
   padding: 12px 24px;
   height: auto;
-}
 
-.el-button--primary {
-  background-color: var(--ios-blue);
-  box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
-}
+  &--primary {
+    background-color: var(--ios-blue);
+    box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
 
-.el-button--primary:hover {
-  background-color: #0066d6;
-  transform: scale(1.02);
-  box-shadow: 0 6px 14px rgba(0, 122, 255, 0.4);
-}
+    &:hover {
+      background-color: #0066d6; // Consider using a variable or darken function if possible, but hardcoded in original
+      transform: scale(1.02);
+      box-shadow: 0 6px 14px rgba(0, 122, 255, 0.4);
+    }
+  }
 
-.el-button--default {
-  background-color: var(--ios-fill-color);
-  color: var(--ios-blue);
-}
+  &--default {
+    background-color: var(--ios-fill-color);
+    color: var(--ios-blue);
 
-.el-button--default:hover {
-  background-color: var(--ios-hover-fill);
-  color: var(--ios-blue);
+    &:hover {
+      background-color: var(--ios-hover-fill);
+      color: var(--ios-blue);
+    }
+  }
 }
 
 /* Inputs */
@@ -47,10 +47,10 @@
   box-shadow: none !important;
   padding: 8px 16px;
   transition: background-color 0.2s;
-}
 
-.el-input__wrapper:hover, .el-input__wrapper.is-focus {
-  background-color: var(--ios-hover-fill);
+  &:hover, &.is-focus {
+    background-color: var(--ios-hover-fill);
+  }
 }
 
 .el-input__inner {
@@ -64,15 +64,15 @@
   border-radius: var(--ios-radius-l);
   box-shadow: var(--ios-shadow-2) !important;
   background-color: var(--ios-bg-secondary);
-}
 
-.el-card__header {
-  border-bottom: 1px solid var(--ios-border-color);
-  padding: 20px 24px;
-}
+  &__header {
+    border-bottom: 1px solid var(--ios-border-color);
+    padding: 20px 24px;
+  }
 
-.el-card__body {
-  padding: 24px;
+  &__body {
+    padding: 24px;
+  }
 }
 
 /* Tables */
@@ -80,22 +80,22 @@
   --el-table-header-bg-color: transparent;
   --el-table-row-hover-bg-color: var(--ios-fill-color);
   background-color: transparent;
-}
 
-.el-table th.el-table__cell {
-  background-color: transparent;
-  color: var(--ios-text-secondary);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 12px;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--ios-border-color);
-}
+  th.el-table__cell {
+    background-color: transparent;
+    color: var(--ios-text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--ios-border-color);
+  }
 
-.el-table td.el-table__cell {
-  border-bottom: 1px solid var(--ios-border-color);
-}
+  td.el-table__cell {
+    border-bottom: 1px solid var(--ios-border-color);
+  }
 
-.el-table__inner-wrapper::before {
-  display: none; /* Remove bottom border */
+  &__inner-wrapper::before {
+    display: none; /* Remove bottom border */
+  }
 }

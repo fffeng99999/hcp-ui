@@ -1,0 +1,13 @@
+.ios-card {
+  background-color: var(--ios-bg-secondary);
+  border-radius: var(--ios-radius-m);
+  box-shadow: var(--ios-shadow-1);
+  transition: all 0.3s ease;
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid var(--ios-border-color);
+
+  &:hover {
+    box-shadow: var(--ios-shadow-2);
+  }
+}

@@ -19,11 +19,4 @@ onMounted(() => {
 })
 </script>
 
-<style scoped>
-.app-container {
-  width: 100%;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-</style>
+<style scoped lang="scss" src="@/assets/styles/layouts/app.scss"></style>
