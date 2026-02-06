@@ -614,7 +614,7 @@ onMounted(() => {
 
 .overview-card :deep(.el-statistic__head) {
   font-size: 14px;
-  color: #909399;
+  color: var(--ios-text-secondary);
 }
 
 .policy-card {
@@ -647,13 +647,13 @@ onMounted(() => {
 
 .policy-form {
   padding: 20px;
-  background: #f5f7fa;
+  background: var(--el-fill-color-light);
   border-radius: 8px;
 }
 
 .policy-form .unit {
   margin-left: 8px;
-  color: #909399;
+  color: var(--ios-text-secondary);
 }
 
 .pagination {

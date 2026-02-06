@@ -114,7 +114,7 @@ onMounted(() => {
 }
 
 .track-icon {
-  color: #8e8e93;
+  color: var(--ios-text-secondary);
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 

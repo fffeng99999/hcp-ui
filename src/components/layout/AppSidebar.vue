@@ -131,9 +131,7 @@ function toggle(item: MenuItem) {
 .logo-text {
   font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, #000 0%, #333 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--ios-text-primary);
 }
 
 .sidebar-nav {
@@ -156,7 +154,7 @@ function toggle(item: MenuItem) {
 }
 
 .nav-item:hover {
-  background-color: rgba(0, 0, 0, 0.03);
+  background-color: var(--ios-hover-fill);
   color: var(--ios-text-primary);
 }
 
@@ -193,7 +191,7 @@ function toggle(item: MenuItem) {
 
 .sidebar-footer {
   padding: 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid var(--ios-border-color);
 }
 
 .user-profile {

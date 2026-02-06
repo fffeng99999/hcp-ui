@@ -25,19 +25,19 @@ const handleLogin = () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #f0f2f5;
+  background-color: var(--ios-bg-primary);
 }
 .login-card {
   padding: 40px;
-  background: white;
+  background: var(--ios-bg-secondary);
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: var(--ios-shadow-2);
   text-align: center;
 }
 .btn-login {
   margin-top: 20px;
   padding: 10px 24px;
-  background: var(--color-primary, #1890ff);
+  background: var(--el-color-primary);
   color: white;
   border: none;
   border-radius: 4px;

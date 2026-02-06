@@ -30,10 +30,10 @@ defineProps<{
 
 <style scoped>
 .metrics-card {
-  background: white;
+  background: var(--ios-bg-secondary);
   border-radius: 8px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: var(--ios-shadow-2);
   position: relative;
   overflow: hidden;
 }
@@ -41,18 +41,18 @@ defineProps<{
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #666;
+  color: var(--ios-text-secondary);
   font-size: 14px;
   margin-bottom: 12px;
 }
 .value {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: var(--ios-text-primary);
 }
 .unit {
   font-size: 12px;
-  color: #999;
+  color: var(--ios-text-tertiary);
   margin-left: 4px;
 }
 .status-bar {
@@ -62,9 +62,9 @@ defineProps<{
   width: 100%;
   height: 4px;
 }
-.status-bar.success { background-color: #52c41a; }
-.status-bar.warning { background-color: #faad14; }
-.status-bar.danger { background-color: #f5222d; }
-.trend.up { color: #f5222d; }
-.trend.down { color: #52c41a; } /* 延迟降低是好事，根据业务调整颜色含义 */
+.status-bar.success { background-color: var(--ios-green); }
+.status-bar.warning { background-color: var(--ios-orange); }
+.status-bar.danger { background-color: var(--ios-red); }
+.trend.up { color: var(--ios-red); }
+.trend.down { color: var(--ios-green); } /* 延迟降低是好事，根据业务调整颜色含义 */
 </style>

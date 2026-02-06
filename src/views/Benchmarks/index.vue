@@ -100,7 +100,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" fixed="right" width="260">
+        <el-table-column label="操作" fixed="right" width="260" class-name="fixed-operation-column" label-class-name="fixed-operation-column">
           <template #default="{ row }">
             <el-button-group size="small" class="ios-button-group">
               <el-button 
@@ -537,5 +537,9 @@ onMounted(() => {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
+}
+
+:deep(.fixed-operation-column) {
+  background-color: var(--ios-bg-primary) !important;
 }
 </style>
