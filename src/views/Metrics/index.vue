@@ -186,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import * as echarts from 'echarts'
 import { 
   Odometer, Timer, Connection, DataAnalysis, Top, Bottom, Download 
@@ -207,6 +207,43 @@ const consensusStore = useConsensusStore()
 const { metrics } = storeToRefs(performanceStore)
 const { onlineCount } = storeToRefs(nodeStore)
 const { currentAlgorithm, parameters } = storeToRefs(consensusStore)
+
+// --- Dark Mode Support ---
+const isDark = ref(document.documentElement.classList.contains('dark'))
+let themeObserver: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
+const getChartColors = () => ({
+  text: isDark.value ? '#C5C5D2' : '#8e8e93', // ios-text-secondary
+  title: isDark.value ? '#ECECF1' : '#1d1d1f', // ios-text-primary
+  axis: isDark.value ? 'rgba(255,255,255,0.1)' : '#e5e5ea',
+  split: isDark.value ? 'rgba(255,255,255,0.05)' : '#f2f2f7',
+  tooltipBg: isDark.value ? '#444654' : '#ffffff',
+  tooltipText: isDark.value ? '#ECECF1' : '#000000',
+  areaColor: isDark.value ? 'rgba(103, 194, 58, 0.1)' : 'rgba(103, 194, 58, 0.2)'
+})
+
+watch(isDark, () => {
+  if (tpsChart) {
+    tpsChart.dispose()
+    initTpsChart()
+  }
+  if (latencyChart) {
+    latencyChart.dispose()
+    initLatencyChart()
+  }
+  if (heatmapChart) {
+    heatmapChart.dispose()
+    initHeatmapChart()
+  }
+  if (healthScoreChart) {
+    healthScoreChart.dispose()
+    initHealthScoreChart()
+  }
+})
 
 // 实时指标
 const realtimeMetrics = computed(() => [
@@ -274,6 +311,7 @@ const recentAlerts = ref<any[]>([])
 const initTpsChart = async () => {
   if (!tpsChartRef.value) return
   tpsChart = echarts.init(tpsChartRef.value)
+  const colors = getChartColors()
   
   const rangeMap: Record<string, number> = { '1h': 60, '6h': 360, '24h': 1440 }
   const limit = rangeMap[tpsTimeRange.value] || 60
@@ -282,15 +320,32 @@ const initTpsChart = async () => {
   const tpsData = history.map(h => h.tps)
   
   const option = {
-    tooltip: { trigger: 'axis' },
+    tooltip: { 
+      trigger: 'axis',
+      backgroundColor: colors.tooltipBg,
+      textStyle: { color: colors.tooltipText },
+      borderColor: colors.split
+    },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-    xAxis: { type: 'category', data: times, boundaryGap: false },
-    yAxis: { type: 'value', name: 'TPS' },
+    xAxis: { 
+      type: 'category', 
+      data: times, 
+      boundaryGap: false,
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisLabel: { color: colors.text }
+    },
+    yAxis: { 
+      type: 'value', 
+      name: 'TPS',
+      nameTextStyle: { color: colors.text },
+      splitLine: { lineStyle: { color: colors.split } },
+      axisLabel: { color: colors.text }
+    },
     series: [{
       name: 'TPS',
       type: 'line',
       smooth: true,
-      areaStyle: { color: 'rgba(103, 194, 58, 0.2)' },
+      areaStyle: { color: colors.areaColor },
       lineStyle: { color: '#67C23A', width: 2 },
       data: tpsData
     }]
@@ -302,6 +357,7 @@ const initTpsChart = async () => {
 const initLatencyChart = async () => {
   if (!latencyChartRef.value) return
   latencyChart = echarts.init(latencyChartRef.value)
+  const colors = getChartColors()
   
   const history = await performanceAPI.getHistory({ limit: 200 })
   const buckets = [100, 200, 300, 400, 500, 600]
@@ -313,10 +369,29 @@ const initLatencyChart = async () => {
   const data = buckets.map((b, idx) => [b, counts[idx]])
   
   const option = {
-    tooltip: { trigger: 'axis' },
+    tooltip: { 
+      trigger: 'axis',
+      backgroundColor: colors.tooltipBg,
+      textStyle: { color: colors.tooltipText },
+      borderColor: colors.split
+    },
     grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
-    xAxis: { type: 'value', name: '延迟(ms)' },
-    yAxis: { type: 'value', name: '交易数量' },
+    xAxis: { 
+      type: 'value', 
+      name: '延迟(ms)',
+      nameTextStyle: { color: colors.text },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisLabel: { color: colors.text },
+      splitLine: { lineStyle: { color: colors.split } }
+    },
+    yAxis: { 
+      type: 'value', 
+      name: '交易数量',
+      nameTextStyle: { color: colors.text },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisLabel: { color: colors.text },
+      splitLine: { lineStyle: { color: colors.split } }
+    },
     series: [{
       name: '延迟分布',
       type: 'bar',
@@ -331,16 +406,34 @@ const initLatencyChart = async () => {
 const initHeatmapChart = async () => {
   if (!heatmapChartRef.value) return
   heatmapChart = echarts.init(heatmapChartRef.value)
+  const colors = getChartColors()
   
   const nodes = nodeStore.nodes.map(n => n.name || n.id)
   const hours = ['当前']
   const data: any[] = nodes.map((_, j) => [j, 0, Math.floor(Math.random() * 100)])
   
   const option = {
-    tooltip: { position: 'top' },
+    tooltip: { 
+      position: 'top',
+      backgroundColor: colors.tooltipBg,
+      textStyle: { color: colors.tooltipText },
+      borderColor: colors.split
+    },
     grid: { height: '70%', top: '10%' },
-    xAxis: { type: 'category', data: nodes, splitArea: { show: true } },
-    yAxis: { type: 'category', data: hours, splitArea: { show: true } },
+    xAxis: { 
+      type: 'category', 
+      data: nodes, 
+      splitArea: { show: true },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisLabel: { color: colors.text }
+    },
+    yAxis: { 
+      type: 'category', 
+      data: hours, 
+      splitArea: { show: true },
+      axisLine: { lineStyle: { color: colors.axis } },
+      axisLabel: { color: colors.text }
+    },
     visualMap: {
       min: 0,
       max: 100,
@@ -348,6 +441,7 @@ const initHeatmapChart = async () => {
       orient: 'horizontal',
       left: 'center',
       bottom: '5%',
+      textStyle: { color: colors.text },
       inRange: { color: ['#50a3ba', '#eac736', '#d94e5d'] }
     },
     series: [{
@@ -364,6 +458,7 @@ const initHeatmapChart = async () => {
 const initHealthScoreChart = () => {
   if (!healthScoreChartRef.value) return
   healthScoreChart = echarts.init(healthScoreChartRef.value)
+  const colors = getChartColors()
   
   const option = {
     series: [{
@@ -384,15 +479,16 @@ const initHealthScoreChart = () => {
         }
       },
       pointer: { itemStyle: { color: 'auto' } },
-      axisTick: { distance: -30, length: 8 },
-      splitLine: { distance: -30, length: 30 },
-      axisLabel: { distance: -20, fontSize: 10 },
+      axisTick: { distance: -30, length: 8, lineStyle: { color: colors.text } },
+      splitLine: { distance: -30, length: 30, lineStyle: { color: colors.text } },
+      axisLabel: { distance: -20, fontSize: 10, color: colors.text },
       detail: {
         valueAnimation: true,
         formatter: '{value} 分',
         color: 'auto',
         fontSize: 20
       },
+      title: { color: colors.title },
       data: [{ value: 93, name: '系统健康度' }]
     }]
   }
@@ -477,7 +573,7 @@ onUnmounted(() => {
 
 .metric-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--ios-shadow-2);
 }
 
 .metric-card.warning {
@@ -497,14 +593,14 @@ onUnmounted(() => {
 
 .metric-label {
   font-size: 14px;
-  color: #909399;
+  color: var(--ios-text-secondary);
   margin-bottom: 4px;
 }
 
 .metric-value {
   font-size: 24px;
   font-weight: bold;
-  color: #303133;
+  color: var(--ios-text-primary);
 }
 
 .metric-trend {
@@ -515,7 +611,7 @@ onUnmounted(() => {
 }
 
 .trend-label {
-  color: #909399;
+  color: var(--ios-text-tertiary);
 }
 
 .card-header {
@@ -535,7 +631,7 @@ onUnmounted(() => {
   display: block;
   margin-bottom: 8px;
   font-size: 14px;
-  color: #606266;
+  color: var(--ios-text-secondary);
 }
 
 .alert-badge {

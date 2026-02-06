@@ -1,66 +1,65 @@
 <template>
   <div class="stress-test-page">
     <!-- 顶部操作栏 -->
-    <el-card class="header-card">
-      <el-row :gutter="16" align="middle">
-        <el-col :span="18">
-          <el-button type="primary" @click="showCreateDialog = true">
+    <div class="ios-card header-card">
+      <el-row :gutter="16" align="middle" class="action-row">
+        <el-col :xs="24" :sm="24" :md="18" class="action-buttons mb-4-mobile">
+          <el-button type="primary" round @click="showCreateDialog = true">
             <el-icon><Plus /></el-icon> 创建压测任务
           </el-button>
-          <el-button @click="batchStart" :disabled="selectedTasks.length === 0">
+          <el-button round @click="batchStart" :disabled="selectedTasks.length === 0">
             <el-icon><VideoPlay /></el-icon> 批量启动
           </el-button>
-          <el-button @click="batchStop" :disabled="selectedTasks.length === 0">
+          <el-button round @click="batchStop" :disabled="selectedTasks.length === 0">
             <el-icon><VideoPause /></el-icon> 批量停止
           </el-button>
-          <el-button type="danger" @click="batchDelete" :disabled="selectedTasks.length === 0">
+          <el-button type="danger" round @click="batchDelete" :disabled="selectedTasks.length === 0">
             <el-icon><Delete /></el-icon> 批量删除
           </el-button>
         </el-col>
-        <el-col :span="6">
-          <el-input v-model="searchQuery" placeholder="搜索任务名称或ID" clearable>
+        <el-col :xs="24" :sm="24" :md="6">
+          <el-input v-model="searchQuery" placeholder="搜索任务名称或ID" clearable class="ios-search">
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
           </el-input>
         </el-col>
       </el-row>
-    </el-card>
+    </div>
 
     <!-- 任务列表 -->
-    <el-card class="table-card">
-      <template #header>
-        <div class="card-header">
-          <span>压测任务列表</span>
-          <div class="header-actions">
-            <el-radio-group v-model="taskFilter" size="small">
-              <el-radio-button label="all">全部</el-radio-button>
-              <el-radio-button label="running">运行中</el-radio-button>
-              <el-radio-button label="completed">已完成</el-radio-button>
-              <el-radio-button label="failed">失败</el-radio-button>
-            </el-radio-group>
-          </div>
+    <div class="ios-card table-card">
+      <div class="card-header">
+        <h3>压测任务列表</h3>
+        <div class="header-actions">
+          <el-radio-group v-model="taskFilter" size="small" class="ios-radio-group">
+            <el-radio-button label="all">全部</el-radio-button>
+            <el-radio-button label="running">运行中</el-radio-button>
+            <el-radio-button label="completed">已完成</el-radio-button>
+            <el-radio-button label="failed">失败</el-radio-button>
+          </el-radio-group>
         </div>
-      </template>
+      </div>
 
       <el-table 
         :data="filteredTasks" 
         @selection-change="handleSelectionChange"
-        stripe
+        style="width: 100%"
+        :header-cell-style="{ background: 'transparent' }"
         v-loading="loading"
       >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="id" label="任务ID" width="120" />
         <el-table-column prop="name" label="任务名称" width="200">
           <template #default="{ row }">
-            <el-link type="primary" @click="viewTaskDetail(row)">
+            <span style="font-weight: 600; color: var(--ios-blue); cursor: pointer" @click="viewTaskDetail(row)">
               {{ row.name }}
-            </el-link>
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="consensus" label="共识算法" width="120">
           <template #default="{ row }">
-            <el-tag :type="getConsensusColor(row.consensus)">
+            <el-tag :type="getConsensusColor(row.consensus)" effect="light" round>
               {{ row.consensus }}
             </el-tag>
           </template>
@@ -78,7 +77,7 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
+            <el-tag :type="getStatusType(row.status)" effect="light" round>
               {{ row.status }}
             </el-tag>
           </template>
@@ -88,6 +87,7 @@
             <el-progress 
               :percentage="row.progress" 
               :status="row.status === '失败' ? 'exception' : undefined"
+              :stroke-width="6"
             />
           </template>
         </el-table-column>
@@ -102,10 +102,11 @@
         <el-table-column prop="createdAt" label="创建时间" width="180" />
         <el-table-column label="操作" fixed="right" width="260">
           <template #default="{ row }">
-            <el-button-group size="small">
+            <el-button-group size="small" class="ios-button-group">
               <el-button 
                 v-if="row.status === '等待中'" 
                 type="success" 
+                circle
                 @click="startTask(row)"
               >
                 <el-icon><VideoPlay /></el-icon>
@@ -113,6 +114,7 @@
               <el-button 
                 v-if="row.status === '运行中'" 
                 type="warning" 
+                circle
                 @click="pauseTask(row)"
               >
                 <el-icon><VideoPause /></el-icon>
@@ -120,18 +122,20 @@
               <el-button 
                 v-if="row.status === '运行中' || row.status === '暂停'" 
                 type="danger" 
+                circle
                 @click="stopTask(row)"
               >
                 <el-icon><Close /></el-icon>
               </el-button>
-              <el-button @click="viewTaskDetail(row)">
+              <el-button circle @click="viewTaskDetail(row)">
                 <el-icon><View /></el-icon>
               </el-button>
-              <el-button @click="duplicateTask(row)">
+              <el-button circle @click="duplicateTask(row)">
                 <el-icon><CopyDocument /></el-icon>
               </el-button>
               <el-button 
                 type="danger" 
+                circle
                 @click="deleteTask(row)"
                 :disabled="row.status === '运行中'"
               >
@@ -151,7 +155,7 @@
           :total="totalTasks"
         />
       </div>
-    </el-card>
+    </div>
 
     <!-- 创建任务对话框 -->
     <el-dialog 
@@ -494,8 +498,19 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+@media (max-width: 992px) {
+  .mb-4-mobile {
+    margin-bottom: 16px;
+  }
+  .action-buttons .el-button {
+    margin-bottom: 8px;
+    margin-left: 0 !important;
+    margin-right: 8px;
+  }
+}
+
 .table-card {
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--ios-shadow-2);
 }
 
 .card-header {

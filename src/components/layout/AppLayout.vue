@@ -1,10 +1,16 @@
 <template>
   <div class="layout">
-    <AppHeader />
-    <div class="layout-body">
-      <AppSidebar />
+    <AppSidebar />
+    <div class="layout-main">
+      <AppHeader />
       <main class="layout-content">
-        <router-view />
+        <div class="content-container">
+          <router-view v-slot="{ Component }">
+            <transition name="fade-slide" mode="out-in">
+              <component :is="Component" />
+            </transition>
+          </router-view>
+        </div>
       </main>
     </div>
   </div>
@@ -18,18 +24,46 @@ import AppSidebar from './AppSidebar.vue';
 <style scoped>
 .layout {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-}
-.layout-body {
-  display: flex;
-  flex: 1;
+  width: 100vw;
+  background-color: var(--ios-bg-primary);
   overflow: hidden;
 }
+
+.layout-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
 .layout-content {
   flex: 1;
-  padding: 16px 20px;
   overflow-y: auto;
-  background-color: #f5f7fa;
+  overflow-x: hidden;
+  padding: 24px;
+}
+
+.content-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  min-height: 100%;
+}
+
+/* Page Transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

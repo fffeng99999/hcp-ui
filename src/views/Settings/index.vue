@@ -1080,6 +1080,35 @@ onMounted(async () => {
 .settings-menu {
   position: sticky;
   top: 20px;
+  border: none;
+  box-shadow: none !important;
+  background: transparent;
+}
+
+:deep(.el-menu) {
+  border-right: none;
+  background-color: transparent;
+}
+
+:deep(.el-menu-item) {
+  border-radius: var(--ios-radius-m);
+  margin-bottom: 8px;
+  color: var(--ios-text-secondary);
+  height: 50px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+:deep(.el-menu-item:hover) {
+  background-color: var(--ios-hover-fill);
+  color: var(--ios-text-primary);
+}
+
+:deep(.el-menu-item.is-active) {
+  background-color: var(--ios-fill-color);
+  color: var(--ios-blue);
+  font-weight: 600;
+  box-shadow: var(--ios-shadow-1);
 }
 
 .settings-content {
@@ -1095,7 +1124,7 @@ onMounted(async () => {
 
 .unit {
   margin-left: 8px;
-  color: #909399;
+  color: var(--ios-text-tertiary);
 }
 
 .storage-info {

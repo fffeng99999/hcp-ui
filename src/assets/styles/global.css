@@ -1,4 +1,160 @@
+/* Reset Box Sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* iOS 26 Color System - Light Mode Default */
+  --ios-bg-primary: #f2f2f7;
+  --ios-bg-secondary: #ffffff;
+  --ios-bg-tertiary: #e5e5ea;
+  
+  --ios-text-primary: #000000;
+  --ios-text-secondary: #8e8e93;
+  --ios-text-tertiary: #c7c7cc;
+  
+  --ios-blue: #007aff;
+  --ios-green: #34c759;
+  --ios-indigo: #5856d6;
+  --ios-orange: #ff9500;
+  --ios-pink: #ff2d55;
+  --ios-purple: #af52de;
+  --ios-red: #ff3b30;
+  --ios-teal: #5ac8fa;
+  --ios-yellow: #ffcc00;
+  
+  /* Glassmorphism */
+  --ios-glass-bg: rgba(255, 255, 255, 0.75);
+  --ios-glass-border: rgba(255, 255, 255, 0.4);
+  --ios-backdrop-blur: blur(20px) saturate(180%);
+  
+  /* Shapes */
+  --ios-radius-s: 10px;
+  --ios-radius-m: 16px;
+  --ios-radius-l: 24px;
+  --ios-radius-xl: 32px;
+  --ios-radius-full: 9999px;
+  
+  /* Shadows */
+  --ios-shadow-1: 0 1px 3px rgba(0,0,0,0.1);
+  --ios-shadow-2: 0 4px 12px rgba(0,0,0,0.08);
+  --ios-shadow-3: 0 12px 32px rgba(0,0,0,0.12);
+  --ios-shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  
+  /* Transitions */
+  --ios-transition-fast: 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ios-transition-spring: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* UI Elements */
+  --ios-border-color: rgba(0, 0, 0, 0.05);
+  --ios-fill-color: rgba(118, 118, 128, 0.12);
+  --ios-hover-fill: rgba(118, 118, 128, 0.2);
+
+  /* Toggle Switch */
+  --ios-toggle-bg: #e9e9ea;
+  --ios-toggle-thumb: #ffffff;
+}
+
+html.dark {
+  /* ChatGPT Style Dark Mode Colors */
+  /* Main Background: Deep Gray (not pure black) */
+  --ios-bg-primary: #343541;
+  /* Secondary Background: Lighter Gray (Cards/Sidebar) */
+  --ios-bg-secondary: #444654;
+  /* Tertiary Background: Darker Gray (Inputs/Active States) */
+  --ios-bg-tertiary: #202123;
+  
+  /* Text Colors */
+  --ios-text-primary: #ECECF1;
+  --ios-text-secondary: #C5C5D2;
+  --ios-text-tertiary: #8E8EA0;
+  
+  /* Accent Colors (Adjusted for dark gray background) */
+  --ios-blue: #10a37f; /* ChatGPT Green/Teal as primary accent? Or stick to iOS Blue? User asked for ChatGPT background, but maybe keep iOS accents? Let's keep iOS accents but maybe tweak blue to be visible. Let's stick to standard iOS colors for accents to maintain "iOS style" functionality, but maybe slight tweak. Actually user said "ChatGPT visual style", maybe they imply the green? But they said "color scheme... main background... text...". I will keep standard accents but ensure visibility. */
+  --ios-blue: #64d2ff; /* Lighter blue for dark mode */
+  --ios-green: #19c37d; /* ChatGPT Green */
+  --ios-indigo: #5e5ce6;
+  --ios-orange: #ff9f0a;
+  --ios-pink: #ff375f;
+  --ios-purple: #bf5af2;
+  --ios-red: #ff453a;
+  --ios-teal: #64d2ff;
+  --ios-yellow: #ffd60a;
+  
+  /* Glassmorphism Dark */
+  --ios-glass-bg: rgba(68, 70, 84, 0.8);
+  --ios-glass-border: rgba(255, 255, 255, 0.1);
+  
+  /* Shadows Dark (Softer) */
+  --ios-shadow-1: 0 1px 3px rgba(0,0,0,0.3);
+  --ios-shadow-2: 0 4px 12px rgba(0,0,0,0.3);
+  --ios-shadow-3: 0 12px 32px rgba(0,0,0,0.4);
+  
+  /* UI Elements Dark */
+  --ios-border-color: rgba(255, 255, 255, 0.1);
+  --ios-fill-color: #40414F; /* Input fields */
+  --ios-hover-fill: #565869;
+
+  /* Toggle Switch Dark */
+  --ios-toggle-bg: #565869;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: var(--ios-bg-primary);
+  color: var(--ios-text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* iOS Card Style */
+.ios-card {
+  background: var(--ios-bg-secondary);
+  border-radius: var(--ios-radius-l);
+  padding: 24px;
+  box-shadow: var(--ios-shadow-2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ios-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--ios-shadow-3);
+}
+
+/* Glass Card */
+.ios-glass-card {
+  background: var(--ios-glass-bg);
+  backdrop-filter: var(--ios-backdrop-blur);
+  -webkit-backdrop-filter: var(--ios-backdrop-blur);
+  border: 1px solid var(--ios-glass-border);
+  border-radius: var(--ios-radius-l);
+  box-shadow: var(--ios-shadow-glass);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 0;
 }

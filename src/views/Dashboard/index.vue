@@ -1,135 +1,107 @@
 <template>
   <div class="dashboard">
     <!-- 顶部概览卡片 -->
-    <div class="overview-section">
-      <el-row :gutter="20">
-        <el-col :span="6">
-          <el-card class="metric-card">
-            <div class="metric-icon" style="background: #409EFF;">
-              <el-icon><Timer /></el-icon>
-            </div>
-            <div class="metric-content">
-              <div class="metric-value">{{ metrics.avgLatency }}ms</div>
-              <div class="metric-label">平均延迟</div>
-            </div>
-          </el-card>
+    <div class="dashboard-section overview-section">
+      <el-row :gutter="24" class="flex-row">
+        <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb-4">
+          <DashboardMetric label="平均延迟" :value="metrics.avgLatency + 'ms'" color="#007aff">
+            <template #icon><el-icon><Timer /></el-icon></template>
+          </DashboardMetric>
         </el-col>
-        <el-col :span="6">
-          <el-card class="metric-card">
-            <div class="metric-icon" style="background: #67C23A;">
-              <el-icon><Odometer /></el-icon>
-            </div>
-            <div class="metric-content">
-              <div class="metric-value">{{ metrics.throughput }}</div>
-              <div class="metric-label">吞吐量(TPS)</div>
-            </div>
-          </el-card>
+        <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb-4">
+          <DashboardMetric label="吞吐量 (TPS)" :value="metrics.throughput" color="#34c759">
+            <template #icon><el-icon><Odometer /></el-icon></template>
+          </DashboardMetric>
         </el-col>
-        <el-col :span="6">
-          <el-card class="metric-card">
-            <div class="metric-icon" style="background: #E6A23C;">
-              <el-icon><Connection /></el-icon>
-            </div>
-            <div class="metric-content">
-              <div class="metric-value">{{ metrics.nodeCount }}</div>
-              <div class="metric-label">活跃节点数</div>
-            </div>
-          </el-card>
+        <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb-4">
+          <DashboardMetric label="活跃节点数" :value="metrics.nodeCount" color="#ff9500">
+            <template #icon><el-icon><Connection /></el-icon></template>
+          </DashboardMetric>
         </el-col>
-        <el-col :span="6">
-          <el-card class="metric-card">
-            <div class="metric-icon" style="background: #F56C6C;">
-              <el-icon><DocumentCopy /></el-icon>
-            </div>
-            <div class="metric-content">
-              <div class="metric-value">{{ metrics.consensusType }}</div>
-              <div class="metric-label">共识算法</div>
-            </div>
-          </el-card>
+        <el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb-4">
+          <DashboardMetric label="共识算法" :value="metrics.consensusType" color="#ff2d55">
+            <template #icon><el-icon><DocumentCopy /></el-icon></template>
+          </DashboardMetric>
         </el-col>
       </el-row>
     </div>
 
     <!-- 性能对比图表区域 -->
-    <div class="charts-section">
-      <el-row :gutter="20">
+    <div class="dashboard-section charts-section">
+      <el-row :gutter="24" class="flex-row">
         <!-- 延迟趋势图 -->
-        <el-col :span="12">
-          <el-card class="chart-card">
-            <template #header>
-              <div class="card-header">
-                <span>共识延迟趋势</span>
-                <el-tag type="info" size="small">实时监控</el-tag>
-              </div>
-            </template>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" class="mb-4">
+          <div class="ios-card chart-card">
+            <div class="card-header">
+              <h3>共识延迟趋势</h3>
+              <el-tag type="info" size="small" effect="light" round>实时监控</el-tag>
+            </div>
             <div ref="latencyChartRef" style="height: 300px;"></div>
-          </el-card>
+          </div>
         </el-col>
 
         <!-- 吞吐量对比图 -->
-        <el-col :span="12">
-          <el-card class="chart-card">
-            <template #header>
-              <div class="card-header">
-                <span>TPS性能对比</span>
-                <el-tag type="success" size="small">tPBFT vs PBFT</el-tag>
-              </div>
-            </template>
+        <el-col :xs="24" :sm="24" :md="12" :lg="12" class="mb-4">
+          <div class="ios-card chart-card">
+            <div class="card-header">
+              <h3>TPS性能对比</h3>
+              <el-tag type="success" size="small" effect="light" round>tPBFT vs PBFT</el-tag>
+            </div>
             <div ref="tpsChartRef" style="height: 300px;"></div>
-          </el-card>
+          </div>
         </el-col>
       </el-row>
 
-      <el-row :gutter="20" style="margin-top: 20px;">
+      <el-row :gutter="24" class="flex-row" style="margin-top: 24px;">
         <!-- 节点状态分布 -->
-        <el-col :span="8">
-          <el-card class="chart-card">
-            <template #header>
-              <span>节点状态分布</span>
-            </template>
+        <el-col :xs="24" :sm="24" :md="8" :lg="8" class="mb-4">
+          <div class="ios-card chart-card">
+            <div class="card-header">
+              <h3>节点状态分布</h3>
+            </div>
             <div ref="nodeStatusChartRef" style="height: 280px;"></div>
-          </el-card>
+          </div>
         </el-col>
 
         <!-- 共识性能界限分析 -->
-        <el-col :span="16">
-          <el-card class="chart-card">
-            <template #header>
-              <div class="card-header">
-                <span>性能界限分析</span>
-                <el-select v-model="selectedConsensus" size="small" style="width: 120px;">
-                  <el-option label="tPBFT" value="tPBFT" />
-                  <el-option label="PBFT" value="PBFT" />
-                  <el-option label="Raft" value="Raft" />
-                  <el-option label="HotStuff" value="HotStuff" />
-                </el-select>
-              </div>
-            </template>
+        <el-col :xs="24" :sm="24" :md="16" :lg="16" class="mb-4">
+          <div class="ios-card chart-card">
+            <div class="card-header">
+              <h3>性能界限分析</h3>
+              <el-select v-model="selectedConsensus" size="small" style="width: 120px;" class="ios-select">
+                <el-option label="tPBFT" value="tPBFT" />
+                <el-option label="PBFT" value="PBFT" />
+                <el-option label="Raft" value="Raft" />
+                <el-option label="HotStuff" value="HotStuff" />
+              </el-select>
+            </div>
             <div ref="performanceLimitChartRef" style="height: 280px;"></div>
-          </el-card>
+          </div>
         </el-col>
       </el-row>
     </div>
 
     <!-- 测试任务管理区域 -->
-    <div class="task-section">
-      <el-card>
-        <template #header>
-          <div class="card-header">
-            <span>测试任务列表</span>
-            <el-button type="primary" size="small" @click="createNewTest">
-              <el-icon><Plus /></el-icon> 新建测试
-            </el-button>
-          </div>
-        </template>
-        <el-table :data="testTasks" style="width: 100%">
+    <div class="dashboard-section task-section">
+      <div class="ios-card">
+        <div class="card-header">
+          <h3>测试任务列表</h3>
+          <el-button type="primary" size="small" round @click="createNewTest">
+            <el-icon class="el-icon--left"><Plus /></el-icon> 新建测试
+          </el-button>
+        </div>
+        <el-table :data="testTasks" style="width: 100%" :header-cell-style="{ background: 'transparent' }">
           <el-table-column prop="id" label="任务ID" width="100" />
-          <el-table-column prop="name" label="测试名称" width="200" />
+          <el-table-column prop="name" label="测试名称" width="200">
+            <template #default="{ row }">
+              <span style="font-weight: 600">{{ row.name }}</span>
+            </template>
+          </el-table-column>
           <el-table-column prop="consensus" label="共识算法" width="120" />
           <el-table-column prop="nodes" label="节点数" width="100" />
           <el-table-column prop="status" label="状态" width="120">
             <template #default="scope">
-              <el-tag :type="getStatusType(scope.row.status)">
+              <el-tag :type="getStatusType(scope.row.status)" effect="light" round>
                 {{ scope.row.status }}
               </el-tag>
             </template>
@@ -137,15 +109,15 @@
           <el-table-column prop="avgLatency" label="平均延迟(ms)" width="140" />
           <el-table-column prop="tps" label="TPS" width="120" />
           <el-table-column prop="createdAt" label="创建时间" width="180" />
-          <el-table-column label="操作" fixed="right" width="200">
+          <el-table-column label="操作" fixed="right" min-width="200">
             <template #default="scope">
-              <el-button size="small" @click="viewDetails(scope.row)">详情</el-button>
-              <el-button size="small" type="primary" @click="startTest(scope.row)">启动</el-button>
-              <el-button size="small" type="danger" @click="deleteTest(scope.row)">删除</el-button>
+              <el-button size="small" text bg @click="viewDetails(scope.row)">详情</el-button>
+              <el-button size="small" type="primary" text bg @click="startTest(scope.row)">启动</el-button>
+              <el-button size="small" type="danger" text bg @click="deleteTest(scope.row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
-      </el-card>
+      </div>
     </div>
   </div>
 </template>
@@ -160,6 +132,7 @@ import { useBenchmarkStore } from '@/store/modules/benchmark'
 import { useNodeStore } from '@/store/modules/node'
 import { useConsensusStore } from '@/store/modules/consensus'
 import * as analysisAPI from '@/api/analysis'
+import DashboardMetric from '@/components/dashboard/DashboardMetric.vue'
 
 const performanceStore = usePerformanceStore()
 const benchmarkStore = useBenchmarkStore()
@@ -191,6 +164,25 @@ const selectedConsensus = ref('tPBFT')
 // 测试任务数据
 const testTasks = computed(() => benchmarkStore.tasks.slice(0, 5)) // Show top 5 tasks
 
+// --- Dark Mode Support ---
+const isDark = ref(document.documentElement.classList.contains('dark'))
+let themeObserver: MutationObserver | null = null
+
+const updateTheme = () => {
+  isDark.value = document.documentElement.classList.contains('dark')
+}
+
+const getChartColors = () => ({
+  text: isDark.value ? '#C5C5D2' : '#8e8e93', // ios-text-secondary
+  title: isDark.value ? '#ECECF1' : '#1d1d1f', // ios-text-primary
+  axis: isDark.value ? 'rgba(255,255,255,0.1)' : '#e5e5ea',
+  split: isDark.value ? 'rgba(255,255,255,0.05)' : '#f2f2f7',
+  bg: isDark.value ? '#444654' : '#ffffff', // For pie chart borders (card bg)
+  tooltipBg: isDark.value ? '#444654' : '#ffffff',
+  tooltipText: isDark.value ? '#ECECF1' : '#000000',
+  tooltipBorder: isDark.value ? 'rgba(255,255,255,0.1)' : '#ccc'
+})
+
 // 初始化延迟趋势图
 const initLatencyChart = () => {
   if (!latencyChartRef.value) return
@@ -200,25 +192,43 @@ const initLatencyChart = () => {
     const history = performanceStore.history.slice(-60) // Last 60 points
     const times = history.map(h => h.timestamp.split('T')[1].split('.')[0])
     const latencies = history.map(h => h.latency)
+    const colors = getChartColors()
 
     const option = {
-      tooltip: { trigger: 'axis' },
-      legend: { data: ['Latency'] },
+      grid: { top: 40, right: 20, bottom: 30, left: 50 },
+      tooltip: { 
+        trigger: 'axis',
+        backgroundColor: colors.tooltipBg,
+        textStyle: { color: colors.tooltipText },
+        borderColor: colors.tooltipBorder
+      },
       xAxis: {
         type: 'category',
-        data: times
+        data: times,
+        axisLine: { lineStyle: { color: colors.axis } },
+        axisLabel: { color: colors.text }
       },
       yAxis: {
         type: 'value',
-        name: '延迟(ms)'
+        name: '延迟(ms)',
+        nameTextStyle: { color: colors.text },
+        axisLabel: { color: colors.text },
+        splitLine: { lineStyle: { type: 'dashed', color: colors.split } }
       },
       series: [
         {
           name: 'Latency',
           type: 'line',
           smooth: true,
+          symbol: 'none',
           data: latencies,
-          itemStyle: { color: '#409EFF' }
+          itemStyle: { color: '#007aff' },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(0, 122, 255, 0.2)' },
+              { offset: 1, color: 'rgba(0, 122, 255, 0)' }
+            ])
+          }
         }
       ]
     }
@@ -228,9 +238,8 @@ const initLatencyChart = () => {
   updateChart()
   
   // Watch for history updates
-  watch(() => performanceStore.history, () => {
-    updateChart()
-  }, { deep: true })
+  watch(() => performanceStore.history, updateChart, { deep: true })
+  watch(isDark, updateChart)
 }
 
 // 初始化TPS对比图
@@ -238,68 +247,88 @@ const initTpsChart = async () => {
   if (!tpsChartRef.value) return
   tpsChart = echarts.init(tpsChartRef.value)
   
-  try {
-    const comparisonData = await analysisAPI.getAlgorithmComparison({
-      algorithms: ['tPBFT', 'PBFT']
-    })
-    
-    // Process data for chart
-    // Assuming data structure: [{ algorithm: 'tPBFT', data: [{nodeCount: 10, tps: 2800}, ...] }, ...]
-    const nodeCounts = comparisonData[0]?.data.map(d => d.nodeCount + '节点') || []
-    
-    const series = comparisonData.map(item => ({
-      name: item.algorithm,
-      type: 'bar',
-      data: item.data.map(d => d.tps),
-      itemStyle: { color: item.algorithm === 'tPBFT' ? '#67C23A' : '#E6A23C' }
-    }))
+  const updateChart = async () => {
+    const colors = getChartColors()
+    let series = []
+    let xAxisData = []
+    let legendData = []
 
-    const option = {
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      legend: { data: comparisonData.map(c => c.algorithm) },
-      xAxis: {
-        type: 'category',
-        data: nodeCounts
-      },
-      yAxis: {
-        type: 'value',
-        name: 'TPS'
-      },
-      series: series
-    }
-    
-    tpsChart.setOption(option)
-  } catch (error) {
-    console.warn('Failed to load TPS comparison data, using fallback', error)
-    // Fallback data
-    const option = {
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      legend: { data: ['tPBFT', 'PBFT'] },
-      xAxis: {
-        type: 'category',
-        data: ['10节点', '30节点', '50节点', '100节点', '200节点']
-      },
-      yAxis: {
-        type: 'value',
-        name: 'TPS'
-      },
-      series: [
+    try {
+      const comparisonData = await analysisAPI.getAlgorithmComparison({
+        algorithms: ['tPBFT', 'PBFT']
+      })
+      
+      xAxisData = comparisonData[0]?.data.map(d => d.nodeCount + '节点') || []
+      legendData = comparisonData.map(c => c.algorithm)
+      
+      series = comparisonData.map(item => ({
+        name: item.algorithm,
+        type: 'bar',
+        barMaxWidth: 30,
+        itemStyle: { 
+          borderRadius: [4, 4, 0, 0],
+          color: item.algorithm === 'tPBFT' ? '#34c759' : '#ff9500' 
+        },
+        data: item.data.map(d => d.tps),
+      }))
+    } catch (error) {
+      console.warn('Using fallback TPS data')
+      legendData = ['tPBFT', 'PBFT']
+      xAxisData = ['10节点', '30节点', '50节点', '100节点', '200节点']
+      series = [
         {
           name: 'tPBFT',
           type: 'bar',
+          barMaxWidth: 20,
+          itemStyle: { borderRadius: [4, 4, 0, 0], color: '#34c759' },
           data: [2800, 2200, 1850, 1200, 800],
-          itemStyle: { color: '#67C23A' }
         },
         {
           name: 'PBFT',
           type: 'bar',
+          barMaxWidth: 20,
+          itemStyle: { borderRadius: [4, 4, 0, 0], color: '#ff9500' },
           data: [1800, 1400, 1200, 750, 450],
-          itemStyle: { color: '#E6A23C' }
         }
       ]
     }
-    tpsChart.setOption(option)
+
+    const option = {
+      grid: { top: 40, right: 20, bottom: 30, left: 50 },
+      tooltip: { 
+        trigger: 'axis', 
+        axisPointer: { type: 'shadow' },
+        backgroundColor: colors.tooltipBg,
+        textStyle: { color: colors.tooltipText },
+        borderColor: colors.tooltipBorder
+      },
+      legend: { 
+        data: legendData, 
+        bottom: 0,
+        textStyle: { color: colors.text }
+      },
+      xAxis: {
+        type: 'category',
+        data: xAxisData,
+        axisLine: { show: false },
+        axisTick: { show: false },
+        axisLabel: { color: colors.text }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'TPS',
+        nameTextStyle: { color: colors.text },
+        axisLabel: { color: colors.text },
+        splitLine: { lineStyle: { type: 'dashed', color: colors.split } }
+      },
+      series: series
+    }
+    
+    tpsChart?.setOption(option)
   }
+
+  await updateChart()
+  watch(isDark, updateChart)
 }
 
 // 初始化节点状态图
@@ -311,28 +340,38 @@ const initNodeStatusChart = () => {
     const online = nodeStore.onlineCount
     const offline = nodeStore.offlineCount
     const total = nodeStore.nodes.length
-    const faulty = total - online - offline // Assuming faulty is the rest, or we check status 'faulty'
+    const faulty = total - online - offline 
+    const colors = getChartColors()
 
     const option = {
-      tooltip: { trigger: 'item' },
-      legend: { orient: 'vertical', left: 'left' },
+      tooltip: { 
+        trigger: 'item',
+        backgroundColor: colors.tooltipBg,
+        textStyle: { color: colors.tooltipText },
+        borderColor: colors.tooltipBorder
+      },
+      legend: { 
+        bottom: 0, 
+        left: 'center',
+        textStyle: { color: colors.text }
+      },
       series: [
         {
           name: '节点状态',
           type: 'pie',
-          radius: '60%',
+          radius: ['40%', '70%'],
+          center: ['50%', '45%'],
+          itemStyle: {
+            borderRadius: 8,
+            borderColor: colors.bg,
+            borderWidth: 2
+          },
+          label: { show: false },
           data: [
-            { value: online, name: '正常运行', itemStyle: { color: '#67C23A' } },
-            { value: faulty, name: '异常/高负载', itemStyle: { color: '#E6A23C' } },
-            { value: offline, name: '离线', itemStyle: { color: '#F56C6C' } }
+            { value: online, name: '正常运行', itemStyle: { color: '#34c759' } },
+            { value: faulty, name: '异常/高负载', itemStyle: { color: '#ff9500' } },
+            { value: offline, name: '离线', itemStyle: { color: '#ff3b30' } }
           ],
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(0, 0, 0, 0.5)'
-            }
-          }
         }
       ]
     }
@@ -341,9 +380,8 @@ const initNodeStatusChart = () => {
 
   updateChart()
   
-  watch(() => nodeStore.nodes, () => {
-    updateChart()
-  }, { deep: true })
+  watch(() => nodeStore.nodes, updateChart, { deep: true })
+  watch(isDark, updateChart)
 }
 
 // 初始化性能界限分析图
@@ -352,77 +390,84 @@ const initPerformanceLimitChart = async () => {
   performanceLimitChart = echarts.init(performanceLimitChartRef.value)
   
   const updateChart = async () => {
+    const colors = getChartColors()
+    let data = []
+
     try {
-      const data = await analysisAPI.getPerformanceLimits(selectedConsensus.value)
-      
-      const option = {
-        tooltip: { trigger: 'axis' },
-        legend: { data: ['实际TPS', '理论上限'] },
-        xAxis: {
-          type: 'value',
-          name: '节点数量'
-        },
-        yAxis: {
-          type: 'value',
-          name: 'TPS'
-        },
-        series: [
-          {
-            name: '实际TPS',
-            type: 'line',
-            data: data.map(d => [d.nodeCount, d.actualTps]),
-            itemStyle: { color: '#409EFF' }
-          },
-          {
-            name: '理论上限',
-            type: 'line',
-            data: data.map(d => [d.nodeCount, d.theoreticalTps]),
-            itemStyle: { color: '#909399', type: 'dashed' }
-          }
-        ]
-      }
-      performanceLimitChart?.setOption(option)
+      data = await analysisAPI.getPerformanceLimits(selectedConsensus.value)
+      // data mapping if needed
     } catch (error) {
-      console.warn('Failed to load performance limits, using fallback', error)
-      const option = {
-        tooltip: { trigger: 'axis' },
-        legend: { data: ['实际TPS', '理论上限'] },
-        xAxis: {
-          type: 'value',
-          name: '节点数量'
-        },
-        yAxis: {
-          type: 'value',
-          name: 'TPS'
-        },
-        series: [
-          {
-            name: '实际TPS',
-            type: 'line',
-            data: [[10, 2800], [30, 2200], [50, 1850], [100, 1200], [200, 800]],
-            itemStyle: { color: '#409EFF' }
-          },
-          {
-            name: '理论上限',
-            type: 'line',
-            data: [[10, 3500], [30, 2800], [50, 2400], [100, 1800], [200, 1200]],
-            itemStyle: { color: '#909399', type: 'dashed' }
-          }
-        ]
-      }
-      performanceLimitChart?.setOption(option)
+      console.warn('Using fallback Performance Limit data')
+      data = [
+        { nodeCount: 10, actualTps: 2800, theoreticalTps: 3500 },
+        { nodeCount: 30, actualTps: 2200, theoreticalTps: 2800 },
+        { nodeCount: 50, actualTps: 1850, theoreticalTps: 2400 },
+        { nodeCount: 100, actualTps: 1200, theoreticalTps: 1800 },
+        { nodeCount: 200, actualTps: 800, theoreticalTps: 1200 }
+      ]
     }
+
+    const option = {
+      grid: { top: 40, right: 20, bottom: 30, left: 50 },
+      tooltip: { 
+        trigger: 'axis',
+        backgroundColor: colors.tooltipBg,
+        textStyle: { color: colors.tooltipText },
+        borderColor: colors.tooltipBorder
+      },
+      legend: { 
+        data: ['实际TPS', '理论上限'], 
+        bottom: 0,
+        textStyle: { color: colors.text }
+      },
+      xAxis: {
+        type: 'value',
+        name: '节点数量',
+        nameTextStyle: { color: colors.text },
+        axisLabel: { color: colors.text },
+        splitLine: { show: false }
+      },
+      yAxis: {
+        type: 'value',
+        name: 'TPS',
+        nameTextStyle: { color: colors.text },
+        axisLabel: { color: colors.text },
+        splitLine: { lineStyle: { type: 'dashed', color: colors.split } }
+      },
+      series: [
+        {
+          name: '实际TPS',
+          type: 'line',
+          smooth: true,
+          data: data.map(d => [d.nodeCount, d.actualTps]),
+          itemStyle: { color: '#007aff' },
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: 'rgba(0, 122, 255, 0.2)' },
+              { offset: 1, color: 'rgba(0, 122, 255, 0)' }
+            ])
+          }
+        },
+        {
+          name: '理论上限',
+          type: 'line',
+          smooth: true,
+          data: data.map(d => [d.nodeCount, d.theoreticalTps]),
+          itemStyle: { color: '#8e8e93' },
+          lineStyle: { type: 'dashed' }
+        }
+      ]
+    }
+    performanceLimitChart?.setOption(option)
   }
 
   await updateChart()
   
-  watch(selectedConsensus, () => {
-    updateChart()
-  })
+  watch(selectedConsensus, updateChart)
+  watch(isDark, updateChart)
 }
 
 const createNewTest = () => {
-  // Logic to navigate to benchmark creation or open modal
   ElMessage.info('请前往测试任务页面创建新任务')
 }
 
@@ -460,6 +505,10 @@ const getStatusType = (status: string) => {
 }
 
 onMounted(async () => {
+  // Theme observer
+  themeObserver = new MutationObserver(updateTheme)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
   // Load initial data
   await Promise.all([
     performanceStore.loadInitialData(),
@@ -482,6 +531,10 @@ onUnmounted(() => {
   performanceStore.stopMonitoring()
   window.removeEventListener('resize', handleResize)
   
+  if (themeObserver) {
+    themeObserver.disconnect()
+  }
+  
   latencyChart?.dispose()
   tpsChart?.dispose()
   nodeStatusChart?.dispose()
@@ -498,77 +551,50 @@ const handleResize = () => {
 
 <style scoped>
 .dashboard {
-  padding: 20px;
-  background: #f0f2f5;
-}
-
-/* 顶部指标卡片样式 */
-.overview-section {
-  margin-bottom: 20px;
-}
-
-.metric-card {
+  /* 使用 Flex 列布局，确保垂直方向的堆叠和间距 */
   display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s;
+  flex-direction: column;
+  gap: 32px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px; /* Added padding to prevent edge touching and horizontal scroll */
+  padding-bottom: 40px;
 }
 
-.metric-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+/* 移除旧的 margin-bottom，改用 gap 控制间距 */
+.dashboard-section {
+  width: 100%;
 }
 
-.metric-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+.mb-4 {
+  margin-bottom: 16px;
+}
+@media (min-width: 992px) {
+  .mb-4 {
+    margin-bottom: 0;
+  }
+}
+
+/* 强制 el-row 使用 flex 布局，防止浮动塌陷 */
+:deep(.flex-row) {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  color: white;
-  margin-right: 16px;
-}
-
-.metric-content {
-  flex: 1;
-}
-
-.metric-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.metric-label {
-  font-size: 14px;
-  color: #909399;
-}
-
-/* 图表卡片样式 */
-.charts-section {
-  margin-bottom: 20px;
-}
-
-.chart-card {
-  height: 100%;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ios-border-color);
 }
 
-/* 任务列表样式 */
-.task-section {
-  margin-top: 20px;
-}
-
-:deep(.el-card__body) {
-  padding: 16px;
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ios-text-primary);
 }
 </style>

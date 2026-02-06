@@ -1,51 +1,65 @@
 <template>
   <div class="consensus-config-page">
-    <!-- 共识算法对比卡片 -->
-    <el-row :gutter="20">
-      <el-col :span="6" v-for="algo in consensusAlgorithms" :key="algo.id">
-        <el-card 
-          class="consensus-card" 
+    <!-- 顶部共识算法选择区域 -->
+    <div class="algorithm-section">
+      <div class="algorithm-list">
+        <div 
+          v-for="algo in consensusAlgorithms" 
+          :key="algo.id"
+          class="ios-card algorithm-card"
           :class="{ active: selectedAlgo === algo.id }"
           @click="selectAlgorithm(algo.id)"
         >
           <div class="algo-header">
-            <el-icon :size="32" :color="algo.color">
-              <component :is="iconComponents[algo.icon as string]" />
-            </el-icon>
-            <h3>{{ algo.id }}</h3>
+            <div class="icon-wrapper" :style="{ background: algo.color + '20', color: algo.color }">
+              <el-icon :size="24">
+                <component :is="iconComponents[algo.icon as string]" />
+              </el-icon>
+            </div>
+            <div class="algo-info">
+              <h3>{{ algo.id }}</h3>
+              <el-tag :type="algo.recommended ? 'success' : 'info'" size="small" effect="light" round>
+                {{ algo.recommended ? '推荐' : '标准' }}
+              </el-tag>
+            </div>
           </div>
+          
           <div class="algo-stats">
             <div class="stat-item">
-              <span class="label">平均延迟</span>
+              <span class="label">延迟</span>
               <span class="value">{{ algo.avgLatency }}ms</span>
             </div>
             <div class="stat-item">
-              <span class="label">峰值TPS</span>
+              <span class="label">TPS</span>
               <span class="value">{{ algo.peakTps }}</span>
             </div>
-            <div class="stat-item">
-              <span class="label">容错率</span>
-              <span class="value">{{ algo.faultTolerance }}</span>
-            </div>
-          </div>
-          <el-tag :type="algo.recommended ? 'success' : 'info'" size="small">
-            {{ algo.recommended ? '推荐使用' : '标准算法' }}
-          </el-tag>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 配置面板 -->
-    <el-card class="config-panel">
-      <template #header>
-        <div class="card-header">
-          <span>{{ selectedAlgo }} 配置参数</span>
-          <div>
-            <el-button @click="resetConfig">重置默认</el-button>
-            <el-button type="primary" @click="saveConfig">保存配置</el-button>
           </div>
         </div>
-      </template>
+
+        <!-- 添加新算法卡片 -->
+        <div class="ios-card algorithm-card add-card" @click="addNewAlgorithm">
+          <div class="icon-wrapper add-icon">
+            <el-icon :size="24"><Plus /></el-icon>
+          </div>
+          <h3>添加算法</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- 配置面板 -->
+    <div class="ios-card config-panel">
+      <div class="card-header">
+        <div class="header-title">
+          <el-icon :color="currentAlgoColor" :size="20" style="margin-right: 8px">
+            <component :is="iconComponents[currentAlgoIcon]" />
+          </el-icon>
+          <span>{{ selectedAlgo }} 参数配置</span>
+        </div>
+        <div class="header-actions">
+          <el-button round @click="resetConfig">重置默认</el-button>
+          <el-button type="primary" round @click="saveConfig">保存配置</el-button>
+        </div>
+      </div>
 
       <el-tabs v-model="activeTab">
         <!-- 基础参数 -->
@@ -219,17 +233,19 @@
           </el-form>
         </el-tab-pane>
       </el-tabs>
-    </el-card>
+    </div>
 
     <!-- 性能预估 -->
-    <el-card>
-      <template #header>
-        <span>性能预估</span>
-      </template>
+    <div class="ios-card">
+      <div class="card-header">
+        <h3>性能预估</h3>
+      </div>
       <el-row :gutter="20">
         <el-col :span="8">
           <div class="performance-metric">
-            <el-icon :size="40" color="#409EFF"><TrendCharts /></el-icon>
+            <div class="metric-icon-wrapper blue">
+              <el-icon :size="24"><TrendCharts /></el-icon>
+            </div>
             <div>
               <div class="metric-label">预估TPS</div>
               <div class="metric-value">{{ estimatedTps }}</div>
@@ -238,7 +254,9 @@
         </el-col>
         <el-col :span="8">
           <div class="performance-metric">
-            <el-icon :size="40" color="#67C23A"><Timer /></el-icon>
+            <div class="metric-icon-wrapper green">
+              <el-icon :size="24"><Timer /></el-icon>
+            </div>
             <div>
               <div class="metric-label">预估延迟</div>
               <div class="metric-value">{{ estimatedLatency }}ms</div>
@@ -247,7 +265,9 @@
         </el-col>
         <el-col :span="8">
           <div class="performance-metric">
-            <el-icon :size="40" color="#E6A23C"><Connection /></el-icon>
+            <div class="metric-icon-wrapper orange">
+              <el-icon :size="24"><Connection /></el-icon>
+            </div>
             <div>
               <div class="metric-label">建议节点数</div>
               <div class="metric-value">{{ recommendedNodes }}</div>
@@ -255,7 +275,7 @@
           </div>
         </el-col>
       </el-row>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -265,16 +285,24 @@ import { storeToRefs } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { 
   Setting, Checked, Document, DataLine, 
-  QuestionFilled, TrendCharts, Timer, Connection 
+  QuestionFilled, TrendCharts, Timer, Connection, Plus
 } from '@element-plus/icons-vue'
 import { useConsensusStore } from '@/store/modules/consensus'
 
 const store = useConsensusStore()
 const { algorithms: consensusAlgorithms, currentAlgorithm: selectedAlgo, parameters } = storeToRefs(store)
 const activeTab = ref('basic')
-const iconComponents: Record<string, any> = { Setting, Checked, Document, DataLine }
+const iconComponents: Record<string, any> = { Setting, Checked, Document, DataLine, Plus }
 
 const config = computed(() => parameters.value[selectedAlgo.value])
+
+const currentAlgoObj = computed(() => consensusAlgorithms.value.find(a => a.id === selectedAlgo.value))
+const currentAlgoColor = computed(() => currentAlgoObj.value?.color || '#909399')
+const currentAlgoIcon = computed(() => currentAlgoObj.value?.icon || 'QuestionFilled')
+
+const addNewAlgorithm = () => {
+  ElMessage.info('功能开发中：添加新共识算法')
+}
 
 const estimatedTps = computed(() => {
   let baseTps = 1850
@@ -340,92 +368,183 @@ onMounted(() => {
 
 <style scoped>
 .consensus-config-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Algorithm Selection Section */
+.algorithm-section {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px; /* Space for shadow */
+}
+
+.algorithm-list {
+  display: flex;
+  gap: 20px;
+  padding: 4px;
+}
+
+.algorithm-card {
+  min-width: 240px;
+  width: 240px;
   padding: 20px;
-}
-
-.consensus-card {
   cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 20px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.consensus-card:hover {
+.algorithm-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: var(--ios-shadow-2);
 }
 
-.consensus-card.active {
-  border: 2px solid #409EFF;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+.algorithm-card.active {
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
 }
 
+.add-card {
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed var(--el-border-color);
+  background-color: transparent;
+}
+
+.add-card:hover {
+  border-color: var(--el-color-primary);
+  background-color: var(--el-color-primary-light-9);
+}
+
+.add-icon {
+  background: rgba(0, 122, 255, 0.1);
+  color: #007aff;
+}
+
+/* Card Header & Content */
 .algo-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
 }
 
-.algo-header h3 {
-  margin: 0;
-  font-size: 18px;
+.icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.algo-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ios-text-primary);
 }
 
 .algo-stats {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .stat-item .label {
-  color: #909399;
+  color: var(--ios-text-secondary);
 }
 
 .stat-item .value {
-  font-weight: bold;
-  color: #303133;
+  font-weight: 600;
+  color: var(--ios-text-primary);
 }
 
+/* Config Panel */
 .config-panel {
-  margin: 20px 0;
+  min-height: 400px;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 600;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ios-text-primary);
 }
 
 .config-form .unit {
   margin-left: 8px;
-  color: #909399;
+  color: var(--ios-text-secondary);
 }
 
+/* Performance Metrics */
 .performance-metric {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  padding: 16px;
+  background: var(--ios-fill-color);
+  border-radius: 16px;
 }
 
+.metric-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.metric-icon-wrapper.blue { background: #007aff; }
+.metric-icon-wrapper.green { background: #34c759; }
+.metric-icon-wrapper.orange { background: #ff9500; }
+
 .metric-label {
-  font-size: 14px;
-  color: #909399;
+  font-size: 12px;
+  color: var(--ios-text-secondary);
+  margin-bottom: 2px;
 }
 
 .metric-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--ios-text-primary);
+  font-family: 'SF Pro Display', -apple-system, sans-serif;
 }
+
+/* iOS Card Style (Fallback if global missing) - REMOVED to use global */
+/* .ios-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+} */
 </style>
