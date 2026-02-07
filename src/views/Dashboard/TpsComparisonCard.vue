@@ -1,6 +1,6 @@
 <template>
   <div class="ios-card chart-card tps-chart-card" :class="{ 'is-expanded': consensusStore.isChartExpanded }">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <div class="header-title-group">
         <h3>TPS性能对比</h3>
         <span v-if="comparisonTitle" class="vs-title">{{ comparisonTitle }}</span>
@@ -282,12 +282,6 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: nowrap;
-}
 .header-title-group {
   display: flex;
   align-items: center;

@@ -1,6 +1,6 @@
 <template>
   <div class="ios-card chart-card">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <h3>节点状态分布</h3>
     </div>
     <div ref="nodeStatusChartRef" style="height: 280px;"></div>

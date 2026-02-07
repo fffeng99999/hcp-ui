@@ -1,6 +1,6 @@
 <template>
   <div class="metrics-card">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <span class="icon">{{ icon }}</span>
       <span class="title">{{ title }}</span>
     </div>
@@ -36,14 +36,6 @@ defineProps<{
   box-shadow: var(--ios-shadow-2);
   position: relative;
   overflow: hidden;
-}
-.card-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--ios-text-secondary);
-  font-size: 14px;
-  margin-bottom: 12px;
 }
 .value {
   font-size: 24px;

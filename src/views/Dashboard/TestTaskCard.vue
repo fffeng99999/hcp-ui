@@ -1,6 +1,6 @@
 <template>
   <div class="ios-card">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <h3>测试任务列表</h3>
       <el-button type="primary" size="small" round @click="createNewTest">
         <el-icon class="el-icon--left"><Plus /></el-icon> 新建测试

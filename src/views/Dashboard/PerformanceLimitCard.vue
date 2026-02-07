@@ -1,6 +1,6 @@
 <template>
   <div class="ios-card chart-card">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <h3>性能界限分析</h3>
       <el-select v-model="selectedConsensus" size="small" style="width: 120px;" class="ios-select">
         <el-option label="tPBFT" value="tPBFT" />

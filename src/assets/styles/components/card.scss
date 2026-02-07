@@ -11,3 +11,23 @@
     box-shadow: var(--ios-shadow-2);
   }
 }
+
+.dashboard-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ios-border-color);
+  line-height: 24px;
+}
+
+.dashboard-card-header h3,
+.dashboard-card-header .title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ios-text-primary);
+  line-height: 24px;
+}

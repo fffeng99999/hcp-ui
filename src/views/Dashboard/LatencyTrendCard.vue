@@ -1,6 +1,6 @@
 <template>
   <div class="ios-card chart-card">
-    <div class="card-header">
+    <div class="dashboard-card-header">
       <h3>共识延迟趋势</h3>
       <el-tag type="info" size="small" effect="light" round>实时监控</el-tag>
     </div>
