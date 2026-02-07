@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import * as consensusAPI from '@/api/consensus'
 import type {
   ConsensusAlgorithm,
@@ -13,6 +13,35 @@ import type {
 
 export const useConsensusStore = defineStore('consensus', () => {
   const algorithms = ref<ConsensusAlgorithm[]>([])
+  const comparisonIds = ref<string[]>([])
+  const isChartExpanded = ref<boolean>(false)
+
+  // Persistence
+  const savedComparison = localStorage.getItem('consensus_comparison_ids')
+  if (savedComparison) {
+    try {
+      comparisonIds.value = JSON.parse(savedComparison)
+    } catch (e) {
+      console.error('Failed to parse saved comparison ids', e)
+    }
+  }
+
+  const savedExpanded = localStorage.getItem('consensus_chart_expanded')
+  if (savedExpanded) {
+    try {
+      isChartExpanded.value = JSON.parse(savedExpanded)
+    } catch (e) {
+      console.error('Failed to parse saved expanded state', e)
+    }
+  }
+
+  watch(comparisonIds, (newVal) => {
+    localStorage.setItem('consensus_comparison_ids', JSON.stringify(newVal))
+  }, { deep: true })
+
+  watch(isChartExpanded, (newVal) => {
+    localStorage.setItem('consensus_chart_expanded', JSON.stringify(newVal))
+  })
 
   const currentAlgorithm = ref<ConsensusAlgorithmType>('tPBFT')
 
@@ -75,6 +104,12 @@ export const useConsensusStore = defineStore('consensus', () => {
     lastUpdated: new Date().toISOString()
   }))
 
+  const comparisonAlgorithms = computed(() => {
+    return comparisonIds.value
+      .map(id => algorithms.value.find(algo => algo.id === id))
+      .filter((algo): algo is ConsensusAlgorithm => !!algo)
+  })
+
   async function selectAlgorithm(algorithmId: ConsensusAlgorithmType): Promise<void> {
     try {
       isConfiguring.value = true
@@ -121,21 +156,42 @@ export const useConsensusStore = defineStore('consensus', () => {
     try {
       isLoading.value = true
       error.value = null
-      const algos = await consensusAPI.getAlgorithms()
+      let algos: ConsensusAlgorithm[] = []
+      
+      try {
+        algos = await consensusAPI.getAlgorithms()
+      } catch (e) {
+        console.warn('API fetch failed, using mock data')
+      }
+      
+      // Fallback Mock Data
+      if (!algos || algos.length === 0) {
+         algos = [
+            { id: 'tPBFT', name: 'tPBFT', displayName: 'tPBFT', description: 'Trust-based PBFT', category: 'Modern' },
+            { id: 'PBFT', name: 'PBFT', displayName: 'PBFT', description: 'Practical Byzantine Fault Tolerance', category: 'BFT-based' },
+            { id: 'HotStuff', name: 'HotStuff', displayName: 'HotStuff', description: 'Linear BFT', category: 'Modern' },
+            { id: 'Leios', name: 'Leios', displayName: 'Leios', description: 'High throughput', category: 'Modern' },
+            { id: 'Raft', name: 'Raft', displayName: 'Raft', description: 'Crash Fault Tolerance', category: 'Modern' }
+         ] as any
+      }
+
       const iconMap: Record<string, string> = {
         tPBFT: 'Checked',
         PBFT: 'Setting',
         HotStuff: 'DataLine',
-        Leios: 'Document'
+        Leios: 'Document',
+        Raft: 'Connection'
       }
       const colorMap: Record<string, string> = {
         tPBFT: '#67C23A',
         PBFT: '#E6A23C',
         HotStuff: '#F56C6C',
-        Leios: '#409EFF'
+        Leios: '#409EFF',
+        Raft: '#909399'
       }
       algorithms.value = algos.map(a => ({
         ...a,
+        displayName: a.displayName || a.name, // Ensure displayName
         icon: a.icon || iconMap[a.id] || 'QuestionFilled',
         color: a.color || colorMap[a.id] || '#909399'
       }))
@@ -147,6 +203,23 @@ export const useConsensusStore = defineStore('consensus', () => {
     }
   }
 
+  function toggleComparisonAlgorithm(id: string) {
+    const index = comparisonIds.value.indexOf(id)
+    if (index > -1) {
+      comparisonIds.value.splice(index, 1)
+    } else {
+      comparisonIds.value.push(id)
+    }
+  }
+
+  function setComparisonAlgorithms(ids: string[]) {
+    comparisonIds.value = ids
+  }
+
+  function setChartExpanded(expanded: boolean) {
+    isChartExpanded.value = expanded
+  }
+
   return {
     // State
     algorithms,
@@ -155,14 +228,20 @@ export const useConsensusStore = defineStore('consensus', () => {
     isConfiguring,
     isLoading,
     error,
+    comparisonIds,
+    isChartExpanded,
 
     // Computed
     currentConfig,
+    comparisonAlgorithms,
 
     // Methods
     selectAlgorithm,
     updateParameter,
     loadConfig,
-    loadAlgorithms
+    loadAlgorithms,
+    toggleComparisonAlgorithm,
+    setComparisonAlgorithms,
+    setChartExpanded
   }
 })

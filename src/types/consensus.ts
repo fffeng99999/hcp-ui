@@ -10,6 +10,7 @@ export type ConsensusAlgorithmType = 'tPBFT' | 'PBFT' | 'HotStuff' | 'Leios'
 export interface ConsensusAlgorithm {
   id: ConsensusAlgorithmType
   name: string
+  displayName: string
   description: string
   category: 'BFT-based' | 'Modern'
   icon?: string
