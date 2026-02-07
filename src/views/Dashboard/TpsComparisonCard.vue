@@ -219,7 +219,7 @@ const initTpsChart = async () => {
     }
 
     const option = {
-      grid: { top: 40, right: 20, bottom: 30, left: 50 },
+      grid: { top: 40, right: 20, bottom: 35, left: 10, containLabel: true },
       tooltip: {
         trigger: 'axis',
         axisPointer: { type: 'shadow' },
@@ -229,8 +229,11 @@ const initTpsChart = async () => {
       },
       legend: {
         data: legendData,
-        bottom: 0,
-        textStyle: { color: colors.text }
+        bottom: 8,
+        type: 'scroll',
+        textStyle: { color: colors.text },
+        padding: [0, 8, 0, 0],
+        itemGap: 12
       },
       xAxis: {
         type: 'category',
