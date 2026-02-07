@@ -528,6 +528,8 @@ const showAllAlerts = () => {
 }
 
 onMounted(() => {
+  themeObserver = new MutationObserver(updateTheme)
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   performanceStore.loadInitialData()
   performanceStore.startMonitoring()
   nodeStore.loadNodes()
@@ -551,6 +553,7 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  themeObserver?.disconnect()
   tpsChart?.dispose()
   latencyChart?.dispose()
   heatmapChart?.dispose()

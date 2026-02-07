@@ -27,6 +27,22 @@
 :deep(.flex-row) {
   display: flex;
   flex-wrap: wrap;
+  align-items: stretch;
+}
+
+:deep(.flex-row > .el-col) {
+  display: flex;
+}
+
+:deep(.flex-row > .el-col > *) {
+  width: 100%;
+  height: 100%;
+}
+
+:deep(.chart-card) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .card-header {
