@@ -47,7 +47,7 @@ import { ref, onMounted } from 'vue'
 import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import * as analysisAPI from '@/api/analysis'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 
 const comparisonData = ref<any[]>([])
 

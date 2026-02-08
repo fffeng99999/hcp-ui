@@ -15,7 +15,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import { useNodeStore } from '@/store/modules/node'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 
 const nodeStore = useNodeStore()
 const heatmapMetric = ref('cpu')

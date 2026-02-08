@@ -15,7 +15,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import * as performanceAPI from '@/api/performance'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 import BaseSegmentedControl from '@/components/common/BaseSegmentedControl.vue'
 
 const tpsTimeRange = ref('1h')

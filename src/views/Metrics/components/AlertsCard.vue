@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 
 const unreadAlerts = ref(5)
 const recentAlerts = ref<any[]>([])

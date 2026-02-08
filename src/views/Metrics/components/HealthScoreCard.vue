@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 
 const healthScoreChartRef = ref<HTMLElement>()
 let healthScoreChart: echarts.ECharts | null = null

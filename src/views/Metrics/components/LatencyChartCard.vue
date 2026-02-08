@@ -15,7 +15,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import * as performanceAPI from '@/api/performance'
-import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseCard from '@/components/cards/DashboardCard.vue'
 
 const latencyMetric = ref('p95')
 const latencyChartRef = ref<HTMLElement>()
