@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="用户管理">
+  <BaseCard class="settings-content" title="用户管理">
     <template #actions>
       <el-button type="primary" size="small" @click="handleAddUser">
         <el-icon><Plus /></el-icon> 新增用户
@@ -33,7 +33,7 @@
         </div>
       </template>
     </ActionTable>
-  </SettingsCard>
+  </BaseCard>
 
   <el-dialog v-model="showUserDialog" :title="isEditing ? '编辑用户' : '新增用户'" width="500px">
     <el-form :model="userForm" label-width="100px">
@@ -73,7 +73,7 @@ import * as settingsAPI from '@/api/settings'
 import ActionTable from '@/components/table/ActionTable.vue'
 import { settingsUsersTable as tableConfig } from '@/config/tables/settingsUsers'
 import type { SystemUser } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const users = ref<SystemUser[]>([])
 const showUserDialog = ref(false)

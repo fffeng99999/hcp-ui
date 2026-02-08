@@ -17,6 +17,12 @@ export interface ConsensusAlgorithm {
   color?: string
   avgLatency?: number
   peakTps?: number
+  avgTps?: number
+  p95Latency?: number
+  p99Latency?: number
+  cpuUsage?: number
+  memoryUsage?: number
+  score?: number
   faultTolerance?: string
   recommended?: boolean
 }

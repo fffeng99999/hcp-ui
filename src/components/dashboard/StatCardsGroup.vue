@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import DashboardMetric from '@/components/dashboard/DashboardMetric.vue'
+import DashboardMetric from './DashboardMetric.vue'
 
 export interface StatCardItem {
   label: string

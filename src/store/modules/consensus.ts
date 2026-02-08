@@ -167,11 +167,26 @@ export const useConsensusStore = defineStore('consensus', () => {
       // Fallback Mock Data
       if (!algos || algos.length === 0) {
          algos = [
-            { id: 'tPBFT', name: 'tPBFT', displayName: 'tPBFT', description: 'Trust-based PBFT', category: 'Modern' },
-            { id: 'PBFT', name: 'PBFT', displayName: 'PBFT', description: 'Practical Byzantine Fault Tolerance', category: 'BFT-based' },
-            { id: 'HotStuff', name: 'HotStuff', displayName: 'HotStuff', description: 'Linear BFT', category: 'Modern' },
-            { id: 'Leios', name: 'Leios', displayName: 'Leios', description: 'High throughput', category: 'Modern' },
-            { id: 'Raft', name: 'Raft', displayName: 'Raft', description: 'Crash Fault Tolerance', category: 'Modern' }
+            { 
+              id: 'tPBFT', name: 'tPBFT', displayName: 'tPBFT', description: 'Trust-based PBFT', category: 'Modern',
+              avgTps: 2200, peakTps: 2500, avgLatency: 350, p95Latency: 450, p99Latency: 600, cpuUsage: 45, memoryUsage: 1024, score: 92
+            },
+            { 
+              id: 'PBFT', name: 'PBFT', displayName: 'PBFT', description: 'Practical Byzantine Fault Tolerance', category: 'BFT-based',
+              avgTps: 1200, peakTps: 1500, avgLatency: 800, p95Latency: 1200, p99Latency: 1800, cpuUsage: 65, memoryUsage: 2048, score: 75
+            },
+            { 
+              id: 'HotStuff', name: 'HotStuff', displayName: 'HotStuff', description: 'Linear BFT', category: 'Modern',
+              avgTps: 1800, peakTps: 2100, avgLatency: 500, p95Latency: 700, p99Latency: 900, cpuUsage: 40, memoryUsage: 1200, score: 85
+            },
+            { 
+              id: 'Leios', name: 'Leios', displayName: 'Leios', description: 'High throughput', category: 'Modern',
+              avgTps: 4500, peakTps: 5200, avgLatency: 900, p95Latency: 1100, p99Latency: 1500, cpuUsage: 75, memoryUsage: 4096, score: 88
+            },
+            { 
+              id: 'Raft', name: 'Raft', displayName: 'Raft', description: 'Crash Fault Tolerance', category: 'Modern',
+              avgTps: 3000, peakTps: 3500, avgLatency: 100, p95Latency: 150, p99Latency: 200, cpuUsage: 20, memoryUsage: 512, score: 82
+            }
          ] as any
       }
 

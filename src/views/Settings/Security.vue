@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="安全设置">
+  <BaseCard class="settings-content" title="安全设置">
     <el-form :model="securitySettings" label-width="180px">
       <el-divider content-position="left">认证配置</el-divider>
 
@@ -86,7 +86,7 @@
         <el-button @click="generateNewKeys">重新生成密钥</el-button>
       </el-form-item>
     </el-form>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -94,7 +94,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { SecuritySettings } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const securitySettings = ref<SecuritySettings>({
   jwtEnabled: true,

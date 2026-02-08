@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="存储配置">
+  <BaseCard class="settings-content" title="存储配置">
     <el-form :model="storageSettings" label-width="160px">
       <el-alert
         title="当前存储使用情况"
@@ -72,7 +72,7 @@
         <el-button @click="cleanupStorage" type="danger">清理垃圾数据</el-button>
       </el-form-item>
     </el-form>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -80,7 +80,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { StorageSettings } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const storageSettings = ref<StorageSettings>({
   dataPath: '/data/hcp',

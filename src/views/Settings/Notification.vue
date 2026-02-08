@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="通知设置">
+  <BaseCard class="settings-content" title="通知设置">
     <el-form :model="notificationSettings" label-width="160px">
       <el-divider content-position="left">邮件通知</el-divider>
 
@@ -80,7 +80,7 @@
         <el-button @click="testNotification">发送测试通知</el-button>
       </el-form-item>
     </el-form>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -88,7 +88,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { NotificationSettings } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const notificationSettings = ref<NotificationSettings>({
   emailEnabled: true,

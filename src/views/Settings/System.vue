@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="系统信息">
+  <BaseCard class="settings-content" title="系统信息">
     <el-descriptions :column="2" border>
       <el-descriptions-item label="系统版本">
         <el-tag type="success">HCP-Bench v1.0.0</el-tag>
@@ -73,13 +73,13 @@
       <el-button @click="exportSystemInfo">导出系统信息</el-button>
       <el-button type="danger" @click="restartSystem">重启系统</el-button>
     </el-space>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Cpu, Monitor, FolderOpened } from '@element-plus/icons-vue'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const checkUpdate = () => ElMessage.info('当前已是最新版本')
 const viewLogs = () => ElMessage.info('跳转到日志查看页面')

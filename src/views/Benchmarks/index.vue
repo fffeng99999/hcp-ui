@@ -1,7 +1,7 @@
 <template>
   <div class="stress-test-page">
     <!-- 顶部操作栏 -->
-    <div class="ios-card header-card">
+    <BaseCard class="header-card">
       <el-row :gutter="16" align="middle" class="action-row">
         <el-col :xs="24" :sm="24" :md="18" class="action-buttons mb-4-mobile">
           <el-button type="primary" round @click="showCreateDialog = true">
@@ -25,18 +25,11 @@
           </el-input>
         </el-col>
       </el-row>
-    </div>
+    </BaseCard>
 
     <!-- 任务列表 -->
-    <ActionTable
-      :data="filteredTasks"
-      title="压测任务列表"
-      :action-width="tableConfig.action.width"
-      selection
-      :loading="loading"
-      @selection-change="handleSelectionChange"
-    >
-      <template #header-actions>
+    <BaseCard class="table-card" title="压测任务列表">
+      <template #actions>
         <el-radio-group v-model="taskFilter" size="small" class="ios-radio-group">
           <el-radio-button label="all">全部</el-radio-button>
           <el-radio-button label="running">运行中</el-radio-button>
@@ -45,102 +38,58 @@
         </el-radio-group>
       </template>
 
-      <el-table-column prop="id" :label="tableConfig.columns.id.label" :width="tableConfig.columns.id.width" resizable />
-      <el-table-column prop="name" :label="tableConfig.columns.name.label" :width="tableConfig.columns.name.width" resizable>
-        <template #default="{ row }">
+      <BaseTable
+        :data="filteredTasks"
+        :config="tableConfig"
+        :loading="loading"
+        selection
+        @selection-change="handleSelectionChange"
+        @start="startTask"
+        @pause="pauseTask"
+        @stop="stopTask"
+        @view="viewTaskDetail"
+        @duplicate="duplicateTask"
+        @delete="deleteTask"
+      >
+        <template #name="{ row }">
           <span style="font-weight: 600; color: var(--ios-blue); cursor: pointer" @click="viewTaskDetail(row)">
             {{ row.name }}
           </span>
         </template>
-      </el-table-column>
-      <el-table-column prop="consensus" :label="tableConfig.columns.consensus.label" :width="tableConfig.columns.consensus.width" resizable>
-        <template #default="{ row }">
+        
+        <template #consensus="{ row }">
           <el-tag :type="getConsensusColor(row.consensus)" effect="light" round>
             {{ row.consensus }}
           </el-tag>
         </template>
-      </el-table-column>
-      <el-table-column prop="nodeCount" :label="tableConfig.columns.nodeCount.label" :width="tableConfig.columns.nodeCount.width" align="center" resizable />
-      <el-table-column prop="txRate" :label="tableConfig.columns.txRate.label" :width="tableConfig.columns.txRate.width" resizable>
-        <template #default="{ row }">
-          {{ row.txRate }} tx/s
-        </template>
-      </el-table-column>
-      <el-table-column prop="duration" :label="tableConfig.columns.duration.label" :width="tableConfig.columns.duration.width" resizable>
-        <template #default="{ row }">
+
+        <template #duration="{ row }">
           {{ formatDuration(row.duration) }}
         </template>
-      </el-table-column>
-      <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
-        <template #default="{ row }">
+
+        <template #status="{ row }">
           <el-tag :type="getStatusType(row.status)" effect="light" round>
             {{ row.status }}
           </el-tag>
         </template>
-      </el-table-column>
-      <el-table-column prop="progress" :label="tableConfig.columns.progress.label" :width="tableConfig.columns.progress.width" resizable>
-        <template #default="{ row }">
+
+        <template #progress="{ row }">
           <el-progress 
             :percentage="row.progress" 
             :status="row.status === '失败' ? 'exception' : undefined"
             :stroke-width="6"
           />
         </template>
-      </el-table-column>
-      <el-table-column :label="tableConfig.columns.metrics.label" :width="tableConfig.columns.metrics.width" resizable>
-        <template #default="{ row }">
+
+        <template #metrics="{ row }">
           <div class="metrics-cell">
             <span>TPS: <strong>{{ row.currentTps || '-' }}</strong></span>
             <span>延迟: <strong>{{ row.currentLatency || '-' }}ms</strong></span>
           </div>
         </template>
-      </el-table-column>
-      <el-table-column prop="createdAt" :label="tableConfig.columns.createdAt.label" :width="tableConfig.columns.createdAt.width" resizable />
+      </BaseTable>
 
-      <template #actions="{ row }">
-        <el-button-group size="small" class="ios-button-group">
-          <el-button 
-            v-if="row.status === '等待中'" 
-            type="success" 
-            circle
-            @click="startTask(row)"
-          >
-            <el-icon><VideoPlay /></el-icon>
-          </el-button>
-          <el-button 
-            v-if="row.status === '运行中'" 
-            type="warning" 
-            circle
-            @click="pauseTask(row)"
-          >
-            <el-icon><VideoPause /></el-icon>
-          </el-button>
-          <el-button 
-            v-if="row.status === '运行中' || row.status === '暂停'" 
-            type="danger" 
-            circle
-            @click="stopTask(row)"
-          >
-            <el-icon><Close /></el-icon>
-          </el-button>
-          <el-button circle @click="viewTaskDetail(row)">
-            <el-icon><View /></el-icon>
-          </el-button>
-          <el-button circle @click="duplicateTask(row)">
-            <el-icon><CopyDocument /></el-icon>
-          </el-button>
-          <el-button 
-            type="danger" 
-            circle
-            @click="deleteTask(row)"
-            :disabled="row.status === '运行中'"
-          >
-            <el-icon><Delete /></el-icon>
-          </el-button>
-        </el-button-group>
-      </template>
-
-      <template #pagination>
+      <div class="pagination-container">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -148,8 +97,8 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="totalTasks"
         />
-      </template>
-    </ActionTable>
+      </div>
+    </BaseCard>
 
     <!-- 创建任务对话框 -->
     <el-dialog 
@@ -268,13 +217,13 @@ import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  Plus, VideoPlay, VideoPause, Delete, Search, Close, View, 
-  CopyDocument 
+  Plus, VideoPlay, VideoPause, Delete, Search
 } from '@element-plus/icons-vue'
 import { useBenchmarkStore } from '@/store/modules/benchmark'
-import ActionTable from '@/components/table/ActionTable.vue'
 import type { BenchmarkTask } from '@/types/benchmark'
 import { benchmarksTasksTable as tableConfig } from '@/config/tables/benchmarksTasks'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseTable from '@/components/common/BaseTable.vue'
 
 const store = useBenchmarkStore()
 const { tasks, isLoading: loading } = storeToRefs(store)
@@ -302,94 +251,108 @@ const newTask = ref({
   description: ''
 })
 
-// 表单验证规则
 const taskRules = {
   name: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
   consensus: [{ required: true, message: '请选择共识算法', trigger: 'change' }],
-  nodeCount: [{ required: true, message: '请设置节点数量', trigger: 'blur' }],
-  txRate: [{ required: true, message: '请设置交易速率', trigger: 'blur' }]
+  nodeCount: [{ required: true, message: '请输入节点数量', trigger: 'blur' }],
+  txRate: [{ required: true, message: '请输入交易速率', trigger: 'blur' }]
 }
 
 // 计算属性
 const filteredTasks = computed(() => {
-  let result = tasks.value
+  let result = tasks.value || []
   
-  if (taskFilter.value !== 'all') {
-    result = result.filter(t => t.status === taskFilter.value)
-  }
-  
+  // 搜索过滤
   if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
     result = result.filter(t => 
-      t.name.includes(searchQuery.value) || t.id.includes(searchQuery.value)
+      t.id.toLowerCase().includes(query) || 
+      t.name.toLowerCase().includes(query)
     )
   }
   
+  // 状态过滤
+  if (taskFilter.value !== 'all') {
+    if (taskFilter.value === 'running') {
+      result = result.filter(t => ['running', 'waiting', 'paused'].includes(t.status))
+    } else {
+      result = result.filter(t => t.status === (taskFilter.value === 'completed' ? 'completed' : 'failed'))
+    }
+  }
+  
+  // 分页
   totalTasks.value = result.length
-  return result
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return result.slice(start, end)
 })
 
 // 方法
+const handleSelectionChange = (selection: BenchmarkTask[]) => {
+  selectedTasks.value = selection
+}
+
 const getConsensusColor = (consensus: string) => {
   const colors: Record<string, string> = {
     'tPBFT': 'success',
-    'PBFT': 'warning',
-    'Raft': 'info',
+    'PBFT': 'primary',
+    'Raft': 'warning',
     'HotStuff': 'danger'
   }
   return colors[consensus] || 'info'
 }
 
 const getStatusType = (status: string) => {
-  const types: Record<string, any> = {
-    'running': 'success',
-    'completed': 'info',
-    'waiting': 'warning',
-    'failed': 'danger',
-    'paused': 'warning'
+  const types: Record<string, string> = {
+    'running': 'primary',
+    'waiting': 'info',
+    'paused': 'warning',
+    'completed': 'success',
+    'failed': 'danger'
   }
   return types[status] || 'info'
 }
 
 const formatDuration = (minutes: number) => {
-  if (minutes >= 60) {
-    return `${(minutes / 60).toFixed(1)}小时`
-  }
-  return `${minutes}分钟`
+  if (minutes < 60) return `${minutes}分钟`
+  const hours = Math.floor(minutes / 60)
+  const mins = minutes % 60
+  return mins > 0 ? `${hours}小时${mins}分钟` : `${hours}小时`
 }
 
-const handleSelectionChange = (selection: BenchmarkTask[]) => {
-  selectedTasks.value = selection
-}
-
+// 任务操作
 const createTask = async () => {
   if (!taskFormRef.value) return
-  await taskFormRef.value.validate()
-  try {
-    await store.createTask(newTask.value)
-    ElMessage.success('任务创建成功')
-    showCreateDialog.value = false
-    // Reset form
-    newTask.value = {
-      name: '',
-      consensus: 'tPBFT',
-      nodeCount: 50,
-      txRate: 1000,
-      duration: 60,
-      txSize: 1024,
-      loadType: 'constant',
-      antiManipulation: true,
-      description: ''
+  await taskFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      try {
+        await store.createTask(newTask.value)
+        showCreateDialog.value = false
+        ElMessage.success('创建任务成功')
+        // 重置表单
+        newTask.value = {
+          name: '',
+          consensus: 'tPBFT',
+          nodeCount: 50,
+          txRate: 1000,
+          duration: 60,
+          txSize: 1024,
+          loadType: 'constant',
+          antiManipulation: true,
+          description: ''
+        }
+      } catch (e) {
+        ElMessage.error('创建任务失败')
+      }
     }
-  } catch (error) {
-    ElMessage.error('创建失败')
-  }
+  })
 }
 
 const startTask = async (row: BenchmarkTask) => {
   try {
     await store.startTask(row.id)
-    ElMessage.success(`任务 ${row.id} 已启动`)
-  } catch (error) {
+    ElMessage.success(`任务 ${row.name} 已启动`)
+  } catch (e) {
     ElMessage.error('启动失败')
   }
 }
@@ -397,92 +360,167 @@ const startTask = async (row: BenchmarkTask) => {
 const pauseTask = async (row: BenchmarkTask) => {
   try {
     await store.pauseTask(row.id)
-    ElMessage.info(`任务 ${row.id} 已暂停`)
-  } catch (error) {
+    ElMessage.warning(`任务 ${row.name} 已暂停`)
+  } catch (e) {
     ElMessage.error('暂停失败')
   }
 }
 
-const stopTask = (row: BenchmarkTask) => {
-  ElMessageBox.confirm('确定停止该任务吗?', '提示', {
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await store.stopTask(row.id)
-      ElMessage.success('任务已停止')
-    } catch (error) {
-      ElMessage.error('停止失败')
-    }
-  })
+const stopTask = async (row: BenchmarkTask) => {
+  ElMessageBox.confirm(`确定停止任务 ${row.name} 吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await store.stopTask(row.id)
+        ElMessage.success(`任务 ${row.name} 已停止`)
+      } catch (e) {
+        ElMessage.error('停止失败')
+      }
+    })
 }
 
-const deleteTask = (row: BenchmarkTask) => {
-  ElMessageBox.confirm('确定删除该任务吗?', '提示', {
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await store.deleteTask(row.id)
-      ElMessage.success('任务已删除')
-    } catch (error) {
-      ElMessage.error('删除失败')
-    }
-  })
-}
-
-const viewTaskDetail = (row: BenchmarkTask) => {
-  ElMessage.info(`查看任务 ${row.id} 详情`)
+const deleteTask = async (row: BenchmarkTask) => {
+  ElMessageBox.confirm(`确定删除任务 ${row.name} 吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await store.deleteTask(row.id)
+        ElMessage.success('任务已删除')
+      } catch (e) {
+        ElMessage.error('删除失败')
+      }
+    })
 }
 
 const duplicateTask = (row: BenchmarkTask) => {
-  // Logic to duplicate task
-  // For now just show message
-  ElMessage.success(`已复制任务 ${row.id}`)
+  newTask.value = {
+    ...newTask.value,
+    name: `${row.name}_copy`,
+    consensus: row.consensus,
+    nodeCount: row.nodeCount,
+    txRate: row.txRate,
+    duration: row.duration,
+    txSize: row.txSize || 1024,
+    loadType: row.loadType || 'constant',
+    antiManipulation: row.antiManipulation || false,
+    description: row.description || ''
+  }
+  showCreateDialog.value = true
 }
 
+const viewTaskDetail = (row: BenchmarkTask) => {
+  // TODO: 跳转到详情页
+  ElMessage.info(`查看任务 ${row.id} 详情`)
+}
+
+// 批量操作
 const batchStart = async () => {
   try {
-    // Implement batch start in store if needed, or loop
-    for (const task of selectedTasks.value) {
-      if (task.status === 'waiting' || task.status === 'paused') {
-        await store.startTask(task.id)
-      }
-    }
-    ElMessage.success(`批量启动 ${selectedTasks.value.length} 个任务`)
-  } catch (error) {
-    ElMessage.error('批量启动失败')
+    await Promise.all(selectedTasks.value.map(t => store.startTask(t.id)))
+    ElMessage.success(`已启动 ${selectedTasks.value.length} 个任务`)
+    selectedTasks.value = []
+  } catch (e) {
+    ElMessage.error('批量启动部分失败')
   }
 }
 
 const batchStop = async () => {
   try {
-    for (const task of selectedTasks.value) {
-      if (task.status === 'running') {
-        await store.stopTask(task.id)
-      }
-    }
-    ElMessage.success('批量停止完成')
-  } catch (error) {
-    ElMessage.error('批量停止失败')
+    await Promise.all(selectedTasks.value.map(t => store.stopTask(t.id)))
+    ElMessage.success(`已停止 ${selectedTasks.value.length} 个任务`)
+    selectedTasks.value = []
+  } catch (e) {
+    ElMessage.error('批量停止部分失败')
   }
 }
 
-const batchDelete = () => {
-  ElMessageBox.confirm(`确定删除选中的 ${selectedTasks.value.length} 个任务吗?`, '提示', {
-    type: 'warning'
-  }).then(async () => {
-    try {
-      for (const task of selectedTasks.value) {
-        await store.deleteTask(task.id)
+const batchDelete = async () => {
+  ElMessageBox.confirm(`确定删除选中的 ${selectedTasks.value.length} 个任务吗?`, '警告', { type: 'warning' })
+    .then(async () => {
+      try {
+        await Promise.all(selectedTasks.value.map(t => store.deleteTask(t.id)))
+        ElMessage.success('批量删除成功')
+        selectedTasks.value = []
+      } catch (e) {
+        ElMessage.error('批量删除失败')
       }
-      ElMessage.success('批量删除完成')
-    } catch (error) {
-      ElMessage.error('批量删除失败')
-    }
-  })
+    })
 }
 
 onMounted(() => {
   store.loadTasks()
 })
 </script>
-<style scoped lang="scss" src="@/assets/styles/pages/benchmarks.scss"></style>
+
+<style lang="scss" scoped>
+.stress-test-page {
+  .header-card {
+    margin-bottom: 24px;
+    
+    .action-row {
+      padding: 12px 0;
+    }
+  }
+
+  .table-card {
+    .metrics-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+      color: var(--el-text-color-secondary);
+      
+      strong {
+        color: var(--el-text-color-primary);
+      }
+    }
+    
+    .pagination-container {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}
+
+// iOS Design overrides
+.ios-search {
+  :deep(.el-input__wrapper) {
+    border-radius: 20px;
+    background-color: var(--ios-bg-secondary);
+    box-shadow: none !important;
+    padding-left: 16px;
+    
+    &.is-focus {
+      background-color: var(--ios-bg-primary);
+      box-shadow: 0 0 0 1px var(--ios-blue) !important;
+    }
+  }
+}
+
+.ios-radio-group {
+  :deep(.el-radio-button__inner) {
+    border: none;
+    background: transparent;
+    padding: 8px 16px;
+    border-radius: 16px;
+    margin-right: 8px;
+    box-shadow: none !important;
+    color: var(--el-text-color-regular);
+    
+    &:hover {
+      color: var(--ios-blue);
+    }
+  }
+  
+  :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+    background-color: var(--ios-blue-light);
+    color: var(--ios-blue);
+    font-weight: 600;
+  }
+}
+
+.mb-4-mobile {
+  @media (max-width: 768px) {
+    margin-bottom: 16px;
+  }
+}
+</style>

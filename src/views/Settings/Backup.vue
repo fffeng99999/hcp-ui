@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="备份恢复">
+  <BaseCard class="settings-content" title="备份恢复">
     <template #actions>
       <el-button type="primary" size="small" @click="createBackup">
         <el-icon><FolderAdd /></el-icon> 创建备份
@@ -70,7 +70,7 @@
         </template>
       </el-table-column>
     </el-table>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -79,7 +79,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { FolderAdd, Upload, Download } from '@element-plus/icons-vue'
 import * as settingsAPI from '@/api/settings'
 import type { BackupSettings, BackupRecord } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const backupSettings = ref<BackupSettings>({
   autoBackup: true,

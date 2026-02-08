@@ -1,5 +1,5 @@
 <template>
-  <SettingsCard class="settings-content" title="通用设置">
+  <BaseCard class="settings-content" title="通用设置">
     <el-form :model="generalSettings" label-width="160px">
       <el-form-item label="系统名称">
         <el-input v-model="generalSettings.systemName" style="width: 400px" />
@@ -53,7 +53,7 @@
         <el-button @click="resetGeneralSettings">重置</el-button>
       </el-form-item>
     </el-form>
-  </SettingsCard>
+  </BaseCard>
 </template>
 
 <script setup lang="ts">
@@ -61,7 +61,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { GeneralSettings } from '@/types'
-import SettingsCard from '@/components/cards/SettingsCard.vue'
+import BaseCard from '@/components/common/BaseCard.vue'
 
 const generalSettings = ref<GeneralSettings>({
   systemName: 'HCP-Bench系统',
