@@ -30,12 +30,10 @@
     <!-- 任务列表 -->
     <BaseCard class="table-card" title="压测任务列表">
       <template #actions>
-        <el-radio-group v-model="taskFilter" size="small" class="ios-radio-group">
-          <el-radio-button label="all">全部</el-radio-button>
-          <el-radio-button label="running">运行中</el-radio-button>
-          <el-radio-button label="completed">已完成</el-radio-button>
-          <el-radio-button label="failed">失败</el-radio-button>
-        </el-radio-group>
+        <BaseSegmentedControl
+          v-model="taskFilter"
+          :options="filterOptions"
+        />
       </template>
 
       <BaseTable
@@ -224,6 +222,7 @@ import type { BenchmarkTask } from '@/types/benchmark'
 import { benchmarksTasksTable as tableConfig } from '@/config/tables/benchmarksTasks'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseTable from '@/components/common/BaseTable.vue'
+import BaseSegmentedControl from '@/components/common/BaseSegmentedControl.vue'
 
 const store = useBenchmarkStore()
 const { tasks, isLoading: loading } = storeToRefs(store)
@@ -231,6 +230,12 @@ const { tasks, isLoading: loading } = storeToRefs(store)
 // 状态数据
 const searchQuery = ref('')
 const taskFilter = ref('all')
+const filterOptions = [
+  { label: '全部', value: 'all' },
+  { label: '运行中', value: 'running' },
+  { label: '已完成', value: 'completed' },
+  { label: '失败', value: 'failed' }
+]
 const currentPage = ref(1)
 const pageSize = ref(20)
 const totalTasks = ref(0)

@@ -1,11 +1,11 @@
 <template>
   <BaseCard title="TPS实时监控">
     <template #action>
-      <el-radio-group v-model="tpsTimeRange" size="small" @change="initTpsChart">
-        <el-radio-button label="1h">1小时</el-radio-button>
-        <el-radio-button label="6h">6小时</el-radio-button>
-        <el-radio-button label="24h">24小时</el-radio-button>
-      </el-radio-group>
+      <BaseSegmentedControl
+        v-model="tpsTimeRange"
+        :options="timeOptions"
+        @change="initTpsChart"
+      />
     </template>
     <div ref="tpsChartRef" style="height: 350px;"></div>
   </BaseCard>
@@ -16,8 +16,14 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import * as performanceAPI from '@/api/performance'
 import BaseCard from '@/components/cards/BaseCard.vue'
+import BaseSegmentedControl from '@/components/common/BaseSegmentedControl.vue'
 
 const tpsTimeRange = ref('1h')
+const timeOptions = [
+  { label: '1小时', value: '1h' },
+  { label: '6小时', value: '6h' },
+  { label: '24小时', value: '24h' }
+]
 const tpsChartRef = ref<HTMLElement>()
 let tpsChart: echarts.ECharts | null = null
 
