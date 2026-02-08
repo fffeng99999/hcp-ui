@@ -18,55 +18,50 @@
       </div>
     </el-card>
 
-    <el-card>
-      <el-table
-        :data="nodes"
-        v-loading="isLoading"
-        stripe
-        style="width: 100%"
-        @row-click="onRowClick"
-      >
-        <el-table-column type="index" width="60" />
-        <el-table-column prop="id" label="节点ID" width="180" />
-        <el-table-column prop="name" label="节点名称" width="180" />
-        <el-table-column prop="status" label="状态" width="120">
-          <template #default="{ row }">
-            <el-tag :type="statusTag(row.status)">{{ row.status }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="latency" label="延迟(ms)" width="120" />
-        <el-table-column prop="ip" label="IP地址" width="160" />
-        <el-table-column prop="location" label="位置" width="160" />
-        <el-table-column label="操作" fixed="right" width="260">
-          <template #default="{ row }">
-            <el-button-group>
-              <el-button size="small" type="primary" @click.stop="viewDetail(row.id)">
-                <el-icon><View /></el-icon>
-              </el-button>
-              <el-button 
-                size="small" 
-                type="warning" 
-                @click.stop="injectFault(row.id)"
-                :disabled="row.status !== 'online'"
-              >
-                <el-icon><Warning /></el-icon>
-              </el-button>
-              <el-button 
-                size="small" 
-                type="success" 
-                @click.stop="recoverNode(row.id)"
-                :disabled="row.status !== 'faulty'"
-              >
-                <el-icon><Refresh /></el-icon>
-              </el-button>
-              <el-button size="small" type="danger" @click.stop="removeNode(row.id)">
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-button-group>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+    <ActionTable
+      :data="nodes"
+      :loading="isLoading"
+      :action-width="260"
+      @row-click="onRowClick"
+    >
+      <el-table-column type="index" width="60" />
+      <el-table-column prop="id" label="节点ID" width="180" />
+      <el-table-column prop="name" label="节点名称" width="180" />
+      <el-table-column prop="status" label="状态" width="120">
+        <template #default="{ row }">
+          <el-tag :type="statusTag(row.status)">{{ row.status }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="latency" label="延迟(ms)" width="120" />
+      <el-table-column prop="ip" label="IP地址" width="160" />
+      <el-table-column prop="location" label="位置" width="160" />
+      <template #actions="{ row }">
+        <el-button-group>
+          <el-button size="small" type="primary" @click.stop="viewDetail(row.id)">
+            <el-icon><View /></el-icon>
+          </el-button>
+          <el-button 
+            size="small" 
+            type="warning" 
+            @click.stop="injectFault(row.id)"
+            :disabled="row.status !== 'online'"
+          >
+            <el-icon><Warning /></el-icon>
+          </el-button>
+          <el-button 
+            size="small" 
+            type="success" 
+            @click.stop="recoverNode(row.id)"
+            :disabled="row.status !== 'faulty'"
+          >
+            <el-icon><Refresh /></el-icon>
+          </el-button>
+          <el-button size="small" type="danger" @click.stop="removeNode(row.id)">
+            <el-icon><Delete /></el-icon>
+          </el-button>
+        </el-button-group>
+      </template>
+    </ActionTable>
   </div>
 </template>
 
@@ -76,6 +71,7 @@ import { storeToRefs } from 'pinia'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useNodeStore } from '@/store/modules/node'
 import { View, Warning, Refresh, Delete } from '@element-plus/icons-vue'
+import ActionTable from '@/components/table/ActionTable.vue'
 
 const store = useNodeStore()
 const { nodes, isLoading, onlineCount, offlineCount, averageLatency } = storeToRefs(store)

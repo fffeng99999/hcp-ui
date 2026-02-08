@@ -349,53 +349,44 @@
     </el-card>
 
     <!-- 检测记录 -->
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>近期检测记录</span>
-          <el-button size="small" @click="exportRecords">
-            <el-icon><Download /></el-icon> 导出记录
-          </el-button>
-        </div>
+    <ActionTable :data="detectionRecords" title="近期检测记录" :action-width="150">
+      <template #header-actions>
+        <el-button size="small" @click="exportRecords">
+          <el-icon><Download /></el-icon> 导出记录
+        </el-button>
       </template>
-
-      <el-table :data="detectionRecords" stripe>
-        <el-table-column prop="timestamp" label="检测时间" width="180" />
-        <el-table-column prop="type" label="操纵类型" width="150">
-          <template #default="{ row }">
-            <el-tag :type="getTypeColor(row.type)">{{ row.type }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="txHash" label="交易哈希" width="200">
-          <template #default="{ row }">
-            <el-link type="primary" :underline="false">
-              {{ row.txHash.slice(0, 20) }}...
-            </el-link>
-          </template>
-        </el-table-column>
-        <el-table-column prop="account" label="涉及账户" width="150" />
-        <el-table-column prop="confidence" label="置信度" width="120">
-          <template #default="{ row }">
-            <el-progress :percentage="row.confidence" :color="getConfidenceColor(row.confidence)" />
-          </template>
-        </el-table-column>
-        <el-table-column prop="action" label="响应动作" width="120" />
-        <el-table-column prop="status" label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === '已处理' ? 'success' : 'warning'" size="small">
-              {{ row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" fixed="right" width="150">
-          <template #default="{ row }">
-            <el-button size="small" @click="viewDetail(row)">详情</el-button>
-            <el-button size="small" type="danger" @click="handleFalsePositive()">误报</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
+      <el-table-column prop="timestamp" label="检测时间" width="180" />
+      <el-table-column prop="type" label="操纵类型" width="150">
+        <template #default="{ row }">
+          <el-tag :type="getTypeColor(row.type)">{{ row.type }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="txHash" label="交易哈希" width="200">
+        <template #default="{ row }">
+          <el-link type="primary" :underline="false">
+            {{ row.txHash.slice(0, 20) }}...
+          </el-link>
+        </template>
+      </el-table-column>
+      <el-table-column prop="account" label="涉及账户" width="150" />
+      <el-table-column prop="confidence" label="置信度" width="120">
+        <template #default="{ row }">
+          <el-progress :percentage="row.confidence" :color="getConfidenceColor(row.confidence)" />
+        </template>
+      </el-table-column>
+      <el-table-column prop="action" label="响应动作" width="120" />
+      <el-table-column prop="status" label="状态" width="100">
+        <template #default="{ row }">
+          <el-tag :type="row.status === '已处理' ? 'success' : 'warning'" size="small">
+            {{ row.status }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <template #actions="{ row }">
+        <el-button size="small" @click="viewDetail(row)">详情</el-button>
+        <el-button size="small" type="danger" @click="handleFalsePositive()">误报</el-button>
+      </template>
+      <template #pagination>
         <el-pagination
           v-model:current-page="recordPage"
           :page-size="10"
@@ -403,8 +394,8 @@
           :total="totalEvents"
           @current-change="loadEvents"
         />
-      </div>
-    </el-card>
+      </template>
+    </ActionTable>
 
     <!-- 新增策略对话框 -->
     <el-dialog v-model="showAddPolicy" title="新增检测策略" width="600px">
@@ -438,6 +429,7 @@ import {
   CircleCheck, Warning, DataAnalysis, Plus, Lightning, 
 } from '@element-plus/icons-vue'
 import * as policyAPI from '@/api/policy'
+import ActionTable from '@/components/table/ActionTable.vue'
 import type { AntiManipulationConfig, ManipulationEvent, PolicyStats } from '@/types'
 
 const stats = ref<PolicyStats>({

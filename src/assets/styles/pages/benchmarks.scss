@@ -17,36 +17,9 @@
   }
 }
 
-.table-card {
-  box-shadow: var(--ios-shadow-2);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-}
-
-.header-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
 .metrics-cell {
   display: flex;
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-:deep(.fixed-operation-column) {
-  background-color: var(--ios-bg-primary) !important;
 }

@@ -1,0 +1,53 @@
+.action-table-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.action-table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ios-border-color);
+}
+
+.action-table-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ios-text-primary);
+  line-height: 24px;
+}
+
+.action-table-title h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ios-text-primary);
+  line-height: 24px;
+}
+
+.action-table-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-table-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-table-card :deep(.action-column) {
+  background-color: var(--ios-bg-primary) !important;
+}
+
+.action-table-card :deep(.el-table__fixed-right),
+.action-table-card :deep(.el-table__fixed-right .el-table__cell),
+.action-table-card :deep(.el-table__fixed-right-patch) {
+  background-color: var(--ios-bg-primary) !important;
+}

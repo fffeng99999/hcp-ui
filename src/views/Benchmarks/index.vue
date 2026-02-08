@@ -28,125 +28,119 @@
     </div>
 
     <!-- 任务列表 -->
-    <div class="ios-card table-card">
-      <div class="card-header">
-        <h3>压测任务列表</h3>
-        <div class="header-actions">
-          <el-radio-group v-model="taskFilter" size="small" class="ios-radio-group">
-            <el-radio-button label="all">全部</el-radio-button>
-            <el-radio-button label="running">运行中</el-radio-button>
-            <el-radio-button label="completed">已完成</el-radio-button>
-            <el-radio-button label="failed">失败</el-radio-button>
-          </el-radio-group>
-        </div>
-      </div>
+    <ActionTable
+      :data="filteredTasks"
+      title="压测任务列表"
+      :action-width="260"
+      selection
+      :loading="loading"
+      @selection-change="handleSelectionChange"
+    >
+      <template #header-actions>
+        <el-radio-group v-model="taskFilter" size="small" class="ios-radio-group">
+          <el-radio-button label="all">全部</el-radio-button>
+          <el-radio-button label="running">运行中</el-radio-button>
+          <el-radio-button label="completed">已完成</el-radio-button>
+          <el-radio-button label="failed">失败</el-radio-button>
+        </el-radio-group>
+      </template>
 
-      <el-table 
-        :data="filteredTasks" 
-        @selection-change="handleSelectionChange"
-        style="width: 100%"
-        :header-cell-style="{ background: 'transparent' }"
-        v-loading="loading"
-      >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="id" label="任务ID" width="120" />
-        <el-table-column prop="name" label="任务名称" width="200">
-          <template #default="{ row }">
-            <span style="font-weight: 600; color: var(--ios-blue); cursor: pointer" @click="viewTaskDetail(row)">
-              {{ row.name }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="consensus" label="共识算法" width="120">
-          <template #default="{ row }">
-            <el-tag :type="getConsensusColor(row.consensus)" effect="light" round>
-              {{ row.consensus }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="nodeCount" label="节点数" width="100" align="center" />
-        <el-table-column prop="txRate" label="交易速率" width="120">
-          <template #default="{ row }">
-            {{ row.txRate }} tx/s
-          </template>
-        </el-table-column>
-        <el-table-column prop="duration" label="持续时间" width="120">
-          <template #default="{ row }">
-            {{ formatDuration(row.duration) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="120">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" effect="light" round>
-              {{ row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="progress" label="进度" width="150">
-          <template #default="{ row }">
-            <el-progress 
-              :percentage="row.progress" 
-              :status="row.status === '失败' ? 'exception' : undefined"
-              :stroke-width="6"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="性能指标" width="200">
-          <template #default="{ row }">
-            <div class="metrics-cell">
-              <span>TPS: <strong>{{ row.currentTps || '-' }}</strong></span>
-              <span>延迟: <strong>{{ row.currentLatency || '-' }}ms</strong></span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column label="操作" fixed="right" width="260" class-name="fixed-operation-column" label-class-name="fixed-operation-column">
-          <template #default="{ row }">
-            <el-button-group size="small" class="ios-button-group">
-              <el-button 
-                v-if="row.status === '等待中'" 
-                type="success" 
-                circle
-                @click="startTask(row)"
-              >
-                <el-icon><VideoPlay /></el-icon>
-              </el-button>
-              <el-button 
-                v-if="row.status === '运行中'" 
-                type="warning" 
-                circle
-                @click="pauseTask(row)"
-              >
-                <el-icon><VideoPause /></el-icon>
-              </el-button>
-              <el-button 
-                v-if="row.status === '运行中' || row.status === '暂停'" 
-                type="danger" 
-                circle
-                @click="stopTask(row)"
-              >
-                <el-icon><Close /></el-icon>
-              </el-button>
-              <el-button circle @click="viewTaskDetail(row)">
-                <el-icon><View /></el-icon>
-              </el-button>
-              <el-button circle @click="duplicateTask(row)">
-                <el-icon><CopyDocument /></el-icon>
-              </el-button>
-              <el-button 
-                type="danger" 
-                circle
-                @click="deleteTask(row)"
-                :disabled="row.status === '运行中'"
-              >
-                <el-icon><Delete /></el-icon>
-              </el-button>
-            </el-button-group>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-table-column prop="id" label="任务ID" width="120" />
+      <el-table-column prop="name" label="任务名称" width="200">
+        <template #default="{ row }">
+          <span style="font-weight: 600; color: var(--ios-blue); cursor: pointer" @click="viewTaskDetail(row)">
+            {{ row.name }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="consensus" label="共识算法" width="120">
+        <template #default="{ row }">
+          <el-tag :type="getConsensusColor(row.consensus)" effect="light" round>
+            {{ row.consensus }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="nodeCount" label="节点数" width="100" align="center" />
+      <el-table-column prop="txRate" label="交易速率" width="120">
+        <template #default="{ row }">
+          {{ row.txRate }} tx/s
+        </template>
+      </el-table-column>
+      <el-table-column prop="duration" label="持续时间" width="120">
+        <template #default="{ row }">
+          {{ formatDuration(row.duration) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="120">
+        <template #default="{ row }">
+          <el-tag :type="getStatusType(row.status)" effect="light" round>
+            {{ row.status }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="progress" label="进度" width="150">
+        <template #default="{ row }">
+          <el-progress 
+            :percentage="row.progress" 
+            :status="row.status === '失败' ? 'exception' : undefined"
+            :stroke-width="6"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="性能指标" width="200">
+        <template #default="{ row }">
+          <div class="metrics-cell">
+            <span>TPS: <strong>{{ row.currentTps || '-' }}</strong></span>
+            <span>延迟: <strong>{{ row.currentLatency || '-' }}ms</strong></span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createdAt" label="创建时间" width="180" />
 
-      <div class="pagination">
+      <template #actions="{ row }">
+        <el-button-group size="small" class="ios-button-group">
+          <el-button 
+            v-if="row.status === '等待中'" 
+            type="success" 
+            circle
+            @click="startTask(row)"
+          >
+            <el-icon><VideoPlay /></el-icon>
+          </el-button>
+          <el-button 
+            v-if="row.status === '运行中'" 
+            type="warning" 
+            circle
+            @click="pauseTask(row)"
+          >
+            <el-icon><VideoPause /></el-icon>
+          </el-button>
+          <el-button 
+            v-if="row.status === '运行中' || row.status === '暂停'" 
+            type="danger" 
+            circle
+            @click="stopTask(row)"
+          >
+            <el-icon><Close /></el-icon>
+          </el-button>
+          <el-button circle @click="viewTaskDetail(row)">
+            <el-icon><View /></el-icon>
+          </el-button>
+          <el-button circle @click="duplicateTask(row)">
+            <el-icon><CopyDocument /></el-icon>
+          </el-button>
+          <el-button 
+            type="danger" 
+            circle
+            @click="deleteTask(row)"
+            :disabled="row.status === '运行中'"
+          >
+            <el-icon><Delete /></el-icon>
+          </el-button>
+        </el-button-group>
+      </template>
+
+      <template #pagination>
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
@@ -154,8 +148,8 @@
           layout="total, sizes, prev, pager, next, jumper"
           :total="totalTasks"
         />
-      </div>
-    </div>
+      </template>
+    </ActionTable>
 
     <!-- 创建任务对话框 -->
     <el-dialog 
@@ -278,6 +272,7 @@ import {
   CopyDocument 
 } from '@element-plus/icons-vue'
 import { useBenchmarkStore } from '@/store/modules/benchmark'
+import ActionTable from '@/components/table/ActionTable.vue'
 import type { BenchmarkTask } from '@/types/benchmark'
 
 const store = useBenchmarkStore()
