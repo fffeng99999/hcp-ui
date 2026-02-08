@@ -2,7 +2,7 @@
   padding: 20px;
 }
 
-.settings-menu {
+.settings-page .settings-menu {
   position: sticky;
   top: 20px;
   border: none;
@@ -10,12 +10,12 @@
   background: transparent;
 }
 
-:deep(.el-menu) {
+.settings-page .el-menu {
   border-right: none;
   background-color: transparent;
 }
 
-:deep(.el-menu-item) {
+.settings-page .el-menu-item {
   border-radius: var(--ios-radius-m);
   margin-bottom: 8px;
   color: var(--ios-text-secondary);
@@ -36,30 +36,30 @@
   }
 }
 
-.settings-content {
+.settings-page .settings-content {
   min-height: 600px;
 }
 
-.card-header {
+.settings-page .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
 }
 
-.unit {
+.settings-page .unit {
   margin-left: 8px;
   color: var(--ios-text-tertiary);
 }
 
-.storage-info {
+.settings-page .storage-info {
   padding: 10px 0;
 }
 
-:deep(.el-form-item__label) {
+.settings-page .el-form-item__label {
   font-weight: 500;
 }
 
-:deep(.el-descriptions__label) {
+.settings-page .el-descriptions__label {
   font-weight: 600;
 }

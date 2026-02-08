@@ -71,6 +71,81 @@ const routes: RouteRecordRaw[] = [
         path: 'settings',
         name: 'Settings',
         component: () => import('@/views/Settings/index.vue'),
+        redirect: '/settings/general',
+        children: [
+          {
+            path: 'general',
+            name: 'SettingsGeneral',
+            component: () => import('@/views/Settings/General.vue'),
+            meta: {
+              title: '通用设置',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'network',
+            name: 'SettingsNetwork',
+            component: () => import('@/views/Settings/Network.vue'),
+            meta: {
+              title: '网络配置',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'storage',
+            name: 'SettingsStorage',
+            component: () => import('@/views/Settings/Storage.vue'),
+            meta: {
+              title: '存储配置',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'security',
+            name: 'SettingsSecurity',
+            component: () => import('@/views/Settings/Security.vue'),
+            meta: {
+              title: '安全设置',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'notification',
+            name: 'SettingsNotification',
+            component: () => import('@/views/Settings/Notification.vue'),
+            meta: {
+              title: '通知设置',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'users',
+            name: 'SettingsUsers',
+            component: () => import('@/views/Settings/Users.vue'),
+            meta: {
+              title: '用户管理',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'system',
+            name: 'SettingsSystem',
+            component: () => import('@/views/Settings/System.vue'),
+            meta: {
+              title: '系统信息',
+              requiresAuth: true
+            }
+          },
+          {
+            path: 'backup',
+            name: 'SettingsBackup',
+            component: () => import('@/views/Settings/Backup.vue'),
+            meta: {
+              title: '备份恢复',
+              requiresAuth: true
+            }
+          }
+        ],
         meta: {
           title: '系统设置',
           icon: 'gear',

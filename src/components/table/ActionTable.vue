@@ -1,5 +1,5 @@
 <template>
-  <div class="ios-card action-table-card">
+  <div :class="['action-table-card', { 'ios-card': card }]">
     <div v-if="title || $slots.title || $slots['header-actions']" class="action-table-header">
       <div class="action-table-title">
         <slot name="title">{{ title }}</slot>
@@ -53,13 +53,15 @@ const props = withDefaults(defineProps<{
   stripe?: boolean
   border?: boolean
   headerTransparent?: boolean
+  card?: boolean
 }>(), {
   loading: false,
   selection: false,
   actionWidth: 240,
   stripe: true,
   border: true,
-  headerTransparent: true
+  headerTransparent: true,
+  card: true
 })
 
 const emit = defineEmits<{
