@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Cpu, Monitor, FolderOpened } from '@element-plus/icons-vue'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const checkUpdate = () => ElMessage.info('当前已是最新版本')
 const viewLogs = () => ElMessage.info('跳转到日志查看页面')

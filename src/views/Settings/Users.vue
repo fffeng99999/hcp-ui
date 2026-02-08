@@ -73,7 +73,7 @@ import * as settingsAPI from '@/api/settings'
 import ActionTable from '@/components/table/ActionTable.vue'
 import { settingsUsersTable as tableConfig } from '@/config/tables/settingsUsers'
 import type { SystemUser } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const users = ref<SystemUser[]>([])
 const showUserDialog = ref(false)

@@ -61,7 +61,7 @@ import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { GeneralSettings } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const generalSettings = ref<GeneralSettings>({
   systemName: 'HCP-Bench系统',

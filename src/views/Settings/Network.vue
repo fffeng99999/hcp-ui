@@ -72,7 +72,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { NetworkSettings } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const networkSettings = ref<NetworkSettings>({
   listenAddress: '0.0.0.0',

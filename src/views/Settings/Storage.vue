@@ -80,7 +80,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { StorageSettings } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const storageSettings = ref<StorageSettings>({
   dataPath: '/data/hcp',

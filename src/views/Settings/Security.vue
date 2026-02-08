@@ -94,7 +94,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { SecuritySettings } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const securitySettings = ref<SecuritySettings>({
   jwtEnabled: true,

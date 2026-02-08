@@ -79,7 +79,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { FolderAdd, Upload, Download } from '@element-plus/icons-vue'
 import * as settingsAPI from '@/api/settings'
 import type { BackupSettings, BackupRecord } from '@/types'
-import SettingsCard from '@/components/SettingsCard.vue'
+import SettingsCard from '@/components/cards/SettingsCard.vue'
 
 const backupSettings = ref<BackupSettings>({
   autoBackup: true,
