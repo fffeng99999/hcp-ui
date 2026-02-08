@@ -31,7 +31,7 @@
     <ActionTable
       :data="filteredTasks"
       title="压测任务列表"
-      :action-width="260"
+      :action-width="tableConfig.action.width"
       selection
       :loading="loading"
       @selection-change="handleSelectionChange"
@@ -45,40 +45,40 @@
         </el-radio-group>
       </template>
 
-      <el-table-column prop="id" label="任务ID" width="120" />
-      <el-table-column prop="name" label="任务名称" width="200">
+      <el-table-column prop="id" :label="tableConfig.columns.id.label" :width="tableConfig.columns.id.width" resizable />
+      <el-table-column prop="name" :label="tableConfig.columns.name.label" :width="tableConfig.columns.name.width" resizable>
         <template #default="{ row }">
           <span style="font-weight: 600; color: var(--ios-blue); cursor: pointer" @click="viewTaskDetail(row)">
             {{ row.name }}
           </span>
         </template>
       </el-table-column>
-      <el-table-column prop="consensus" label="共识算法" width="120">
+      <el-table-column prop="consensus" :label="tableConfig.columns.consensus.label" :width="tableConfig.columns.consensus.width" resizable>
         <template #default="{ row }">
           <el-tag :type="getConsensusColor(row.consensus)" effect="light" round>
             {{ row.consensus }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="nodeCount" label="节点数" width="100" align="center" />
-      <el-table-column prop="txRate" label="交易速率" width="120">
+      <el-table-column prop="nodeCount" :label="tableConfig.columns.nodeCount.label" :width="tableConfig.columns.nodeCount.width" align="center" resizable />
+      <el-table-column prop="txRate" :label="tableConfig.columns.txRate.label" :width="tableConfig.columns.txRate.width" resizable>
         <template #default="{ row }">
           {{ row.txRate }} tx/s
         </template>
       </el-table-column>
-      <el-table-column prop="duration" label="持续时间" width="120">
+      <el-table-column prop="duration" :label="tableConfig.columns.duration.label" :width="tableConfig.columns.duration.width" resizable>
         <template #default="{ row }">
           {{ formatDuration(row.duration) }}
         </template>
       </el-table-column>
-      <el-table-column prop="status" label="状态" width="120">
+      <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
         <template #default="{ row }">
           <el-tag :type="getStatusType(row.status)" effect="light" round>
             {{ row.status }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="progress" label="进度" width="150">
+      <el-table-column prop="progress" :label="tableConfig.columns.progress.label" :width="tableConfig.columns.progress.width" resizable>
         <template #default="{ row }">
           <el-progress 
             :percentage="row.progress" 
@@ -87,7 +87,7 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="性能指标" width="200">
+      <el-table-column :label="tableConfig.columns.metrics.label" :width="tableConfig.columns.metrics.width" resizable>
         <template #default="{ row }">
           <div class="metrics-cell">
             <span>TPS: <strong>{{ row.currentTps || '-' }}</strong></span>
@@ -95,7 +95,7 @@
           </div>
         </template>
       </el-table-column>
-      <el-table-column prop="createdAt" label="创建时间" width="180" />
+      <el-table-column prop="createdAt" :label="tableConfig.columns.createdAt.label" :width="tableConfig.columns.createdAt.width" resizable />
 
       <template #actions="{ row }">
         <el-button-group size="small" class="ios-button-group">
@@ -274,6 +274,7 @@ import {
 import { useBenchmarkStore } from '@/store/modules/benchmark'
 import ActionTable from '@/components/table/ActionTable.vue'
 import type { BenchmarkTask } from '@/types/benchmark'
+import { benchmarksTasksTable as tableConfig } from '@/config/tables/benchmarksTasks'
 
 const store = useBenchmarkStore()
 const { tasks, isLoading: loading } = storeToRefs(store)

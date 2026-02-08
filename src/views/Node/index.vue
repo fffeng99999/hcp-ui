@@ -21,20 +21,20 @@
     <ActionTable
       :data="nodes"
       :loading="isLoading"
-      :action-width="260"
+      :action-width="tableConfig.action.width"
       @row-click="onRowClick"
     >
-      <el-table-column type="index" width="60" />
-      <el-table-column prop="id" label="节点ID" width="180" />
-      <el-table-column prop="name" label="节点名称" width="180" />
-      <el-table-column prop="status" label="状态" width="120">
+      <el-table-column type="index" :label="tableConfig.columns.index.label" :width="tableConfig.columns.index.width" resizable />
+      <el-table-column prop="id" :label="tableConfig.columns.id.label" :width="tableConfig.columns.id.width" resizable />
+      <el-table-column prop="name" :label="tableConfig.columns.name.label" :width="tableConfig.columns.name.width" resizable />
+      <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
         <template #default="{ row }">
           <el-tag :type="statusTag(row.status)">{{ row.status }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="latency" label="延迟(ms)" width="120" />
-      <el-table-column prop="ip" label="IP地址" width="160" />
-      <el-table-column prop="location" label="位置" width="160" />
+      <el-table-column prop="latency" :label="tableConfig.columns.latency.label" :width="tableConfig.columns.latency.width" resizable />
+      <el-table-column prop="ip" :label="tableConfig.columns.ip.label" :width="tableConfig.columns.ip.width" resizable />
+      <el-table-column prop="location" :label="tableConfig.columns.location.label" :width="tableConfig.columns.location.width" resizable />
       <template #actions="{ row }">
         <el-button-group>
           <el-button size="small" type="primary" @click.stop="viewDetail(row.id)">
@@ -72,6 +72,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { useNodeStore } from '@/store/modules/node'
 import { View, Warning, Refresh, Delete } from '@element-plus/icons-vue'
 import ActionTable from '@/components/table/ActionTable.vue'
+import { nodesTable as tableConfig } from '@/config/tables/nodes'
 
 const store = useNodeStore()
 const { nodes, isLoading, onlineCount, offlineCount, averageLatency } = storeToRefs(store)

@@ -349,33 +349,33 @@
     </el-card>
 
     <!-- 检测记录 -->
-    <ActionTable :data="detectionRecords" title="近期检测记录" :action-width="150">
+    <ActionTable :data="detectionRecords" title="近期检测记录" :action-width="tableConfig.action.width">
       <template #header-actions>
         <el-button size="small" @click="exportRecords">
           <el-icon><Download /></el-icon> 导出记录
         </el-button>
       </template>
-      <el-table-column prop="timestamp" label="检测时间" width="180" />
-      <el-table-column prop="type" label="操纵类型" width="150">
+      <el-table-column prop="timestamp" :label="tableConfig.columns.timestamp.label" :width="tableConfig.columns.timestamp.width" resizable />
+      <el-table-column prop="type" :label="tableConfig.columns.type.label" :width="tableConfig.columns.type.width" resizable>
         <template #default="{ row }">
           <el-tag :type="getTypeColor(row.type)">{{ row.type }}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="txHash" label="交易哈希" width="200">
+      <el-table-column prop="txHash" :label="tableConfig.columns.txHash.label" :width="tableConfig.columns.txHash.width" resizable>
         <template #default="{ row }">
           <el-link type="primary" :underline="false">
             {{ row.txHash.slice(0, 20) }}...
           </el-link>
         </template>
       </el-table-column>
-      <el-table-column prop="account" label="涉及账户" width="150" />
-      <el-table-column prop="confidence" label="置信度" width="120">
+      <el-table-column prop="account" :label="tableConfig.columns.account.label" :width="tableConfig.columns.account.width" resizable />
+      <el-table-column prop="confidence" :label="tableConfig.columns.confidence.label" :width="tableConfig.columns.confidence.width" resizable>
         <template #default="{ row }">
           <el-progress :percentage="row.confidence" :color="getConfidenceColor(row.confidence)" />
         </template>
       </el-table-column>
-      <el-table-column prop="action" label="响应动作" width="120" />
-      <el-table-column prop="status" label="状态" width="100">
+      <el-table-column prop="action" :label="tableConfig.columns.action.label" :width="tableConfig.columns.action.width" resizable />
+      <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
         <template #default="{ row }">
           <el-tag :type="row.status === '已处理' ? 'success' : 'warning'" size="small">
             {{ row.status }}
@@ -431,6 +431,7 @@ import {
 import * as policyAPI from '@/api/policy'
 import ActionTable from '@/components/table/ActionTable.vue'
 import type { AntiManipulationConfig, ManipulationEvent, PolicyStats } from '@/types'
+import { policyDetectionRecordsTable as tableConfig } from '@/config/tables/policyDetectionRecords'
 
 const stats = ref<PolicyStats>({
   totalDetected: 0,

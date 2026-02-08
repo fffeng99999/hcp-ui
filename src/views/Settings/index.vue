@@ -439,44 +439,38 @@
         </el-card>
 
         <!-- 用户管理 -->
-        <el-card v-show="activeMenu === 'user'" class="settings-content">
-          <template #header>
-            <div class="card-header">
-              <span>用户管理</span>
-              <el-button type="primary" size="small" @click="handleAddUser">
-                <el-icon><Plus /></el-icon> 新增用户
+        <ActionTable v-show="activeMenu === 'user'" class="settings-content" :data="users" title="用户管理" :action-width="tableConfig.action.width">
+          <template #header-actions>
+            <el-button type="primary" size="small" @click="handleAddUser">
+              <el-icon><Plus /></el-icon> 新增用户
+            </el-button>
+          </template>
+          <el-table-column prop="username" :label="tableConfig.columns.username.label" :width="tableConfig.columns.username.width" resizable />
+          <el-table-column prop="email" :label="tableConfig.columns.email.label" :width="tableConfig.columns.email.width" resizable />
+          <el-table-column prop="role" :label="tableConfig.columns.role.label" :width="tableConfig.columns.role.width" resizable>
+            <template #default="{ row }">
+              <el-tag :type="getRoleType(row.role)">{{ row.role }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
+            <template #default="{ row }">
+              <el-tag :type="row.status === '正常' ? 'success' : 'danger'" size="small">
+                {{ row.status }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="lastLogin" :label="tableConfig.columns.lastLogin.label" :width="tableConfig.columns.lastLogin.width" resizable />
+          <el-table-column prop="createdAt" :label="tableConfig.columns.createdAt.label" :width="tableConfig.columns.createdAt.width" resizable />
+          <template #actions="{ row }">
+            <div class="action-table-actions">
+              <el-button size="small" @click="editUser(row)">编辑</el-button>
+              <el-button size="small" @click="resetPassword(row)">重置密码</el-button>
+              <el-button size="small" type="danger" @click="deleteUser(row)" :disabled="row.role === '超级管理员'">
+                删除
               </el-button>
             </div>
           </template>
-
-          <el-table :data="users" stripe>
-            <el-table-column prop="username" label="用户名" width="150" />
-            <el-table-column prop="email" label="邮箱" width="200" />
-            <el-table-column prop="role" label="角色" width="120">
-              <template #default="{ row }">
-                <el-tag :type="getRoleType(row.role)">{{ row.role }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="status" label="状态" width="100">
-              <template #default="{ row }">
-                <el-tag :type="row.status === '正常' ? 'success' : 'danger'" size="small">
-                  {{ row.status }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="lastLogin" label="最后登录" width="180" />
-            <el-table-column prop="createdAt" label="创建时间" width="180" />
-            <el-table-column label="操作" fixed="right" width="200">
-              <template #default="{ row }">
-                <el-button size="small" @click="editUser(row)">编辑</el-button>
-                <el-button size="small" @click="resetPassword(row)">重置密码</el-button>
-                <el-button size="small" type="danger" @click="deleteUser(row)" :disabled="row.role === '超级管理员'">
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-card>
+        </ActionTable>
 
         <!-- 系统信息 -->
         <el-card v-show="activeMenu === 'system'" class="settings-content">
@@ -678,6 +672,8 @@ import {
   Plus, Upload, FolderAdd, Cpu
 } from '@element-plus/icons-vue'
 import * as settingsAPI from '@/api/settings'
+import ActionTable from '@/components/table/ActionTable.vue'
+import { settingsUsersTable as tableConfig } from '@/config/tables/settingsUsers'
 import type { 
   GeneralSettings, NetworkSettings, StorageSettings, 
   SecuritySettings, NotificationSettings, BackupSettings,

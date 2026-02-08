@@ -18,7 +18,7 @@
       @selection-change="onSelectionChange"
       @row-click="onRowClick"
     >
-      <el-table-column v-if="selection" type="selection" width="55" />
+      <el-table-column v-if="selection" type="selection" width="55" resizable />
       <slot />
       <el-table-column
         label="操作"
@@ -26,9 +26,12 @@
         :width="actionWidth"
         class-name="action-column"
         label-class-name="action-column"
+        resizable
       >
         <template #default="scope">
-          <slot name="actions" v-bind="scope" />
+          <div class="action-table-actions">
+            <slot name="actions" v-bind="scope" />
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -53,9 +56,9 @@ const props = withDefaults(defineProps<{
 }>(), {
   loading: false,
   selection: false,
-  actionWidth: 200,
+  actionWidth: 240,
   stripe: true,
-  border: false,
+  border: true,
   headerTransparent: true
 })
 
