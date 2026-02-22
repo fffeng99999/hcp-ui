@@ -28,9 +28,11 @@ const applyThemeClass = (theme: 'light' | 'dark') => {
 }
 
 onMounted(() => {
-  performanceStore.loadInitialData()
   uiStore.loadPreferences()
   authStore.loadFromStorage()
+  if (authStore.token) {
+    performanceStore.loadInitialData()
+  }
 })
 
 watch(

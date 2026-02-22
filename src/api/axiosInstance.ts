@@ -30,7 +30,6 @@ axiosInstance.interceptors.request.use(
 // 响应拦截器
 axiosInstance.interceptors.response.use(
   response => {
-    // 从响应头中提取全局配置版本号
     const store = useConfigVersionStore()
     const versionHeader = response.headers['x-config-version'] ?? response.headers['X-Config-Version']
     const previousVersion = store.currentVersion
@@ -48,10 +47,13 @@ axiosInstance.interceptors.response.use(
     return response.data
   },
   (error: AxiosError) => {
-    // 统一错误处理
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+    const requestUrl = error.config?.url || ''
+    if (status === 401) {
       localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      if (window.location.pathname !== '/login' && !requestUrl.startsWith('/auth/login')) {
+        window.location.href = '/login'
+      }
     }
 
     const data: any = error.response?.data
