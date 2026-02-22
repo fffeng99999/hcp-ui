@@ -192,9 +192,8 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   document.title = `${to.meta.title} - HCP Benchmark`
-  
-  // 路由前置守卫：在此处进行简单的登录校验
-  if (to.meta.requiresAuth) {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  if (requiresAuth) {
     const authStore = useAuthStore()
     if (!authStore.token) {
       authStore.loadFromStorage()
