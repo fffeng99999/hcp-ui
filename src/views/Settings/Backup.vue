@@ -88,6 +88,26 @@ const backupSettings = ref<BackupSettings>({
   backupPath: '/backup/hcp'
 })
 
+const originalBackupSettings = ref<BackupSettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const backupList = ref<BackupRecord[]>([])
 
 const loadBackups = async () => {
@@ -101,7 +121,9 @@ const loadBackups = async () => {
 
 const saveBackupSettings = async () => {
   try {
-    await settingsAPI.updateBackupSettings(backupSettings.value)
+    const payload = getChangedFields(backupSettings.value, originalBackupSettings.value)
+    await settingsAPI.updateBackupSettings(payload)
+    originalBackupSettings.value = { ...backupSettings.value }
     ElMessage.success('备份设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -151,6 +173,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getBackupSettings()
     backupSettings.value = data
+    originalBackupSettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取备份设置失败')
   }

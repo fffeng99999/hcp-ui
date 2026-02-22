@@ -88,6 +88,26 @@ const networkSettings = ref<NetworkSettings>({
   seedNodes: ['192.168.1.10:30303', '192.168.1.11:30303', '192.168.1.12:30303']
 })
 
+const originalNetworkSettings = ref<NetworkSettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const seedNodesInput = computed({
   get: () => networkSettings.value.seedNodes.join('\n'),
   set: (val) => {
@@ -97,7 +117,9 @@ const seedNodesInput = computed({
 
 const saveNetworkSettings = async () => {
   try {
-    await settingsAPI.updateNetworkSettings(networkSettings.value)
+    const payload = getChangedFields(networkSettings.value, originalNetworkSettings.value)
+    await settingsAPI.updateNetworkSettings(payload)
+    originalNetworkSettings.value = { ...networkSettings.value }
     ElMessage.success('网络配置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -112,6 +134,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getNetworkSettings()
     networkSettings.value = data
+    originalNetworkSettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取网络配置失败')
   }

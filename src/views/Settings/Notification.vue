@@ -104,9 +104,31 @@ const notificationSettings = ref<NotificationSettings>({
   securityEvents: ['manipulation', 'attack', 'unauthorized']
 })
 
+const originalNotificationSettings = ref<NotificationSettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const saveNotificationSettings = async () => {
   try {
-    await settingsAPI.updateNotificationSettings(notificationSettings.value)
+    const payload = getChangedFields(notificationSettings.value, originalNotificationSettings.value)
+    await settingsAPI.updateNotificationSettings(payload)
+    originalNotificationSettings.value = { ...notificationSettings.value }
     ElMessage.success('通知设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -119,6 +141,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getNotificationSettings()
     notificationSettings.value = data
+    originalNotificationSettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取通知设置失败')
   }

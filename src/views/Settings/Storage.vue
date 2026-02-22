@@ -93,6 +93,26 @@ const storageSettings = ref<StorageSettings>({
   archiveThreshold: 50
 })
 
+const originalStorageSettings = ref<StorageSettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const optimizing = ref(false)
 const storageUsed = ref(385)
 const storageTotal = ref(1024)
@@ -109,7 +129,9 @@ const selectLogPath = () => ElMessage.info('打开文件选择器')
 
 const saveStorageSettings = async () => {
   try {
-    await settingsAPI.updateStorageSettings(storageSettings.value)
+    const payload = getChangedFields(storageSettings.value, originalStorageSettings.value)
+    await settingsAPI.updateStorageSettings(payload)
+    originalStorageSettings.value = { ...storageSettings.value }
     ElMessage.success('存储配置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -133,6 +155,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getStorageSettings()
     storageSettings.value = data
+    originalStorageSettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取存储配置失败')
   }

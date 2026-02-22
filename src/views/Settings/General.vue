@@ -74,9 +74,31 @@ const generalSettings = ref<GeneralSettings>({
   rateLimit: 1000
 })
 
+const originalGeneralSettings = ref<GeneralSettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const saveGeneralSettings = async () => {
   try {
-    await settingsAPI.updateGeneralSettings(generalSettings.value)
+    const payload = getChangedFields(generalSettings.value, originalGeneralSettings.value)
+    await settingsAPI.updateGeneralSettings(payload)
+    originalGeneralSettings.value = { ...generalSettings.value }
     ElMessage.success('通用设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -97,6 +119,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getGeneralSettings()
     generalSettings.value = data
+    originalGeneralSettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取通用设置失败')
   }

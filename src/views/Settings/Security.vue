@@ -112,6 +112,26 @@ const securitySettings = ref<SecuritySettings>({
   ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8']
 })
 
+const originalSecuritySettings = ref<SecuritySettings | null>(null)
+
+const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
+  if (!original) return { ...current }
+  const diff: Partial<T> = {}
+  Object.keys(current).forEach((key) => {
+    const k = key as keyof T
+    const cur = current[k]
+    const orig = original[k]
+    if (Array.isArray(cur) && Array.isArray(orig)) {
+      if (cur.length !== orig.length || cur.some((v: unknown, i: number) => v !== orig[i])) {
+        diff[k] = cur
+      }
+    } else if (cur !== orig) {
+      diff[k] = cur
+    }
+  })
+  return diff
+}
+
 const ipWhitelistInput = computed({
   get: () => securitySettings.value.ipWhitelist.join('\n'),
   set: (val) => {
@@ -121,7 +141,9 @@ const ipWhitelistInput = computed({
 
 const saveSecuritySettings = async () => {
   try {
-    await settingsAPI.updateSecuritySettings(securitySettings.value)
+    const payload = getChangedFields(securitySettings.value, originalSecuritySettings.value)
+    await settingsAPI.updateSecuritySettings(payload)
+    originalSecuritySettings.value = { ...securitySettings.value }
     ElMessage.success('安全设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -137,6 +159,7 @@ onMounted(async () => {
   try {
     const data = await settingsAPI.getSecuritySettings()
     securitySettings.value = data
+    originalSecuritySettings.value = { ...data }
   } catch (e) {
     ElMessage.warning('获取安全设置失败')
   }
