@@ -38,5 +38,7 @@ export const endpoints = {
   SETTINGS_BACKUP: '/settings/backup',
   SETTINGS_USERS: '/settings/users',
   SETTINGS_BACKUPS: '/settings/backups',
-  SETTINGS_SYSTEM: '/settings/system'
+  SETTINGS_SYSTEM: '/settings/system',
+  SETTINGS_SYSTEM_LOGS: '/settings/system/logs',
+  SETTINGS_SYSTEM_RESTART: '/settings/system/restart'
 }

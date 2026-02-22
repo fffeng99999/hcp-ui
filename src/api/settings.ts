@@ -121,6 +121,19 @@ export const getSystemInfo = () => {
   return http.get<SystemInfoResponse>(endpoints.SETTINGS_SYSTEM)
 }
 
+export interface SystemLogEntry {
+  name: string
+  content: string
+}
+
+export const getSystemLogs = () => {
+  return http.get<SystemLogEntry[]>(endpoints.SETTINGS_SYSTEM_LOGS)
+}
+
+export const restartSystem = () => {
+  return http.post<string>(endpoints.SETTINGS_SYSTEM_RESTART)
+}
+
 // ================ 用户管理相关接口 ================
 
 export const getUsers = () => {

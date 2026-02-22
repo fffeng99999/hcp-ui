@@ -71,12 +71,31 @@
     <el-divider />
 
     <el-space>
-      <el-button @click="checkUpdate">检查更新</el-button>
+      <el-button v-show="showCheckUpdate" @click="checkUpdate">检查更新</el-button>
       <el-button @click="viewLogs">查看日志</el-button>
       <el-button @click="exportSystemInfo">导出系统信息</el-button>
       <el-button type="danger" @click="restartSystem">重启系统</el-button>
     </el-space>
   </BaseCard>
+
+  <el-dialog v-model="logDialogVisible" width="900px" destroy-on-close>
+    <BaseCard title="系统日志">
+      <template #actions>
+        <el-button size="small" :loading="logLoading" @click="loadSystemLogs">刷新</el-button>
+      </template>
+      <el-tabs v-model="activeLogTab">
+        <el-tab-pane
+          v-for="entry in logEntries"
+          :key="entry.name"
+          :label="entry.name"
+          :name="entry.name"
+        >
+          <pre class="log-content">{{ entry.content || '暂无日志' }}</pre>
+        </el-tab-pane>
+      </el-tabs>
+      <div v-if="logEntries.length === 0" class="log-empty">暂无日志</div>
+    </BaseCard>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
@@ -86,7 +105,13 @@ import { Cpu, Monitor, FolderOpened } from '@element-plus/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import { API_BASE_URL } from '@/api/config'
 import { useConfigVersionStore } from '@/store/modules/configVersion'
-import { getSystemInfo, type SystemInfoResponse } from '@/api/settings'
+import {
+  getSystemInfo,
+  getSystemLogs,
+  restartSystem as restartSystemApi,
+  type SystemInfoResponse,
+  type SystemLogEntry
+} from '@/api/settings'
 
 const systemInfo = ref<SystemInfoResponse>({
   systemVersion: 'HCP-Bench v1.0.0',
@@ -110,6 +135,11 @@ const systemInfo = ref<SystemInfoResponse>({
 const configVersionStore = useConfigVersionStore()
 let eventSource: EventSource | null = null
 let pollingTimer: number | null = null
+const showCheckUpdate = ref(false)
+const logDialogVisible = ref(false)
+const logLoading = ref(false)
+const logEntries = ref<SystemLogEntry[]>([])
+const activeLogTab = ref('')
 
 const loadSystemInfo = async () => {
   try {
@@ -141,11 +171,78 @@ const startSystemStream = () => {
 }
 
 const checkUpdate = () => ElMessage.info('当前已是最新版本')
-const viewLogs = () => ElMessage.info('跳转到日志查看页面')
-const exportSystemInfo = () => ElMessage.success('系统信息导出成功')
+
+const loadSystemLogs = async () => {
+  logLoading.value = true
+  try {
+    const data = await getSystemLogs()
+    logEntries.value = data
+    if (!activeLogTab.value && data.length > 0) {
+      activeLogTab.value = data[0].name
+    }
+  } catch (e) {
+    ElMessage.error('获取日志失败')
+  } finally {
+    logLoading.value = false
+  }
+}
+
+const viewLogs = async () => {
+  logDialogVisible.value = true
+  await loadSystemLogs()
+}
+
+const buildSystemInfoMarkdown = () => {
+  const rows: Array<[string, string]> = [
+    ['系统版本', systemInfo.value.systemVersion],
+    ['区块链版本', systemInfo.value.blockchainVersion],
+    ['操作系统', systemInfo.value.os],
+    ['内核版本', systemInfo.value.kernelVersion],
+    ['CPU', systemInfo.value.cpuDesc],
+    ['内存', systemInfo.value.memoryDesc],
+    ['运行时间', systemInfo.value.uptime],
+    ['Go版本', systemInfo.value.goVersion],
+    ['数据库版本', systemInfo.value.dbVersion],
+    ['网络延迟', systemInfo.value.networkLatency],
+    ['磁盘I/O', systemInfo.value.diskIo],
+    ['网络吞吐', systemInfo.value.networkThroughput],
+    ['CPU使用率', `${systemInfo.value.cpuUsage}%`],
+    ['内存使用率', `${systemInfo.value.memoryUsage}%`],
+    ['磁盘使用率', `${systemInfo.value.diskUsage}%`],
+    ['配置版本号', `${systemInfo.value.configVersion}`]
+  ]
+  const lines = [
+    '# 系统信息',
+    '',
+    '| 项目 | 值 |',
+    '| --- | --- |',
+    ...rows.map(([key, value]) => `| ${key} | ${value} |`)
+  ]
+  return lines.join('\n')
+}
+
+const exportSystemInfo = () => {
+  const markdown = buildSystemInfoMarkdown()
+  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = `system-info-${Date.now()}.md`
+  link.click()
+  URL.revokeObjectURL(url)
+  ElMessage.success('系统信息导出成功')
+}
+
 const restartSystem = () => {
   ElMessageBox.confirm('确定重启系统吗?这将中断所有正在运行的任务', '警告', { type: 'warning' })
-    .then(() => ElMessage.warning('系统将在10秒后重启'))
+    .then(async () => {
+      try {
+        await restartSystemApi()
+        ElMessage.success('重启指令已发送')
+      } catch (e) {
+        ElMessage.error('重启失败')
+      }
+    })
 }
 
 onMounted(() => {
@@ -165,3 +262,21 @@ onBeforeUnmount(() => {
   }
 })
 </script>
+
+<style scoped lang="scss">
+.log-content {
+  max-height: 420px;
+  overflow: auto;
+  white-space: pre-wrap;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ios-text-secondary, #5a5a5a);
+}
+
+.log-empty {
+  padding: 24px 0;
+  text-align: center;
+  color: var(--ios-text-secondary, #8e8e93);
+}
+</style>
