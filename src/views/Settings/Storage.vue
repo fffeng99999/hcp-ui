@@ -9,13 +9,13 @@
       >
         <div class="storage-info">
           <el-progress :percentage="storageUsage" :color="getStorageColor(storageUsage)">
-            <span>{{ storageUsed }}GB / {{ storageTotal }}GB</span>
+            <span>{{ formatSize(storageSettings.storageUsed) }}GB / {{ formatSize(storageSettings.storageTotal) }}GB</span>
           </el-progress>
         </div>
       </el-alert>
 
-      <el-form-item label="数据存储路径">
-        <el-input v-model="storageSettings.dataPath" style="width: 400px">
+      <el-form-item label="区块链数据存储路径">
+        <el-input v-model="storageSettings.blockchainDataPath" style="width: 400px">
           <template #append>
             <el-button @click="selectDataPath">浏览</el-button>
           </template>
@@ -30,13 +30,17 @@
         </el-input>
       </el-form-item>
 
-      <el-form-item label="数据库类型">
-        <el-select v-model="storageSettings.dbType" style="width: 200px">
-          <el-option label="LevelDB" value="leveldb" />
-          <el-option label="RocksDB" value="rocksdb" />
-          <el-option label="PostgreSQL" value="postgres" />
-          <el-option label="MongoDB" value="mongodb" />
-        </el-select>
+      <el-form-item label="报告数据">
+        <el-input v-model="storageSettings.reportDataPath" style="width: 400px" placeholder="报告数据存储路径">
+        </el-input>
+      </el-form-item>
+
+      <el-form-item label="后端数据库类型">
+        <el-input v-model="storageSettings.backendDbType" disabled style="width: 200px" />
+      </el-form-item>
+
+      <el-form-item label="区块链数据库类型">
+        <el-input v-model="storageSettings.blockchainDbType" disabled style="width: 200px" />
       </el-form-item>
 
       <el-form-item label="缓存大小">
@@ -44,27 +48,29 @@
         <span class="unit">MB</span>
       </el-form-item>
 
-      <el-form-item label="数据压缩">
-        <el-switch v-model="storageSettings.compression" />
-      </el-form-item>
+      <div v-show="false">
+        <el-form-item label="数据压缩">
+          <el-switch v-model="storageSettings.compression" />
+        </el-form-item>
 
-      <el-form-item label="压缩算法">
-        <el-select v-model="storageSettings.compressionAlgo" :disabled="!storageSettings.compression" style="width: 200px">
-          <el-option label="Snappy" value="snappy" />
-          <el-option label="LZ4" value="lz4" />
-          <el-option label="Gzip" value="gzip" />
-          <el-option label="Zstd" value="zstd" />
-        </el-select>
-      </el-form-item>
+        <el-form-item label="压缩算法">
+          <el-select v-model="storageSettings.compressionAlgo" :disabled="!storageSettings.compression" style="width: 200px">
+            <el-option label="Snappy" value="snappy" />
+            <el-option label="LZ4" value="lz4" />
+            <el-option label="Gzip" value="gzip" />
+            <el-option label="Zstd" value="zstd" />
+          </el-select>
+        </el-form-item>
 
-      <el-form-item label="自动归档">
-        <el-switch v-model="storageSettings.autoArchive" />
-      </el-form-item>
+        <el-form-item label="自动归档">
+          <el-switch v-model="storageSettings.autoArchive" />
+        </el-form-item>
 
-      <el-form-item label="归档阈值">
-        <el-input-number v-model="storageSettings.archiveThreshold" :min="1" :max="100" :disabled="!storageSettings.autoArchive" />
-        <span class="unit">GB</span>
-      </el-form-item>
+        <el-form-item label="归档阈值">
+          <el-input-number v-model="storageSettings.archiveThreshold" :min="1" :max="100" :disabled="!storageSettings.autoArchive" />
+          <span class="unit">GB</span>
+        </el-form-item>
+      </div>
 
       <el-form-item>
         <el-button type="primary" @click="saveStorageSettings">保存设置</el-button>
@@ -99,14 +105,18 @@ import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 // 存储配置表单数据
 const storageSettings = ref<StorageSettings>({
-  dataPath: '/data/hcp',
+  blockchainDataPath: '/data/hcp',
   logPath: '/var/log/hcp',
-  dbType: 'leveldb',
+  reportDataPath: '/data/reports',
+  backendDbType: 'PostgreSQL',
+  blockchainDbType: 'LevelDB',
   cacheSize: 1024,
   compression: true,
   compressionAlgo: 'snappy',
   autoArchive: true,
-  archiveThreshold: 50
+  archiveThreshold: 50,
+  storageUsed: 0,
+  storageTotal: 0
 })
 
 // 原始存储配置快照，用于计算差异字段
@@ -137,9 +147,17 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
 
 // 存储使用率展示相关状态
 const optimizing = ref(false)
-const storageUsed = ref(385)
-const storageTotal = ref(1024)
-const storageUsage = computed(() => Math.round((storageUsed.value / storageTotal.value) * 100))
+const formatSize = (bytes: number | undefined) => {
+  if (!bytes) return '0'
+  return (bytes / (1024 * 1024 * 1024)).toFixed(2)
+}
+
+const storageUsage = computed(() => {
+    const used = storageSettings.value.storageUsed || 0
+    const total = storageSettings.value.storageTotal || 1 // Avoid division by zero
+    if (total === 0) return 0
+    return Math.round((used / total) * 100)
+})
 
 // 根据使用率返回进度条颜色
 const getStorageColor = (percentage: number) => {
@@ -172,7 +190,7 @@ const onDataPathPicked = (event: Event) => {
   const input = event.target as HTMLInputElement
   const picked = resolvePickedPath(input)
   if (picked) {
-    storageSettings.value.dataPath = picked
+    storageSettings.value.blockchainDataPath = picked
   }
   input.value = ''
 }
@@ -198,9 +216,9 @@ const validatePath = async (label: string, path: string) => {
 }
 
 watch(
-  () => storageSettings.value.dataPath,
+  () => storageSettings.value.blockchainDataPath,
   (val) => {
-    validatePath('数据存储路径', val)
+    validatePath('区块链数据存储路径', val)
   }
 )
 

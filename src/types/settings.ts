@@ -24,14 +24,18 @@ export interface NetworkSettings {
 }
 
 export interface StorageSettings {
-  dataPath: string
+  blockchainDataPath: string
   logPath: string
-  dbType: 'leveldb' | 'rocksdb' | 'postgres' | 'mongodb'
+  reportDataPath: string
+  backendDbType: string
+  blockchainDbType: string
   cacheSize: number
   compression: boolean
   compressionAlgo: 'snappy' | 'lz4' | 'gzip' | 'zstd'
   autoArchive: boolean
   archiveThreshold: number
+  storageUsed?: number
+  storageTotal?: number
 }
 
 export interface SecuritySettings {
