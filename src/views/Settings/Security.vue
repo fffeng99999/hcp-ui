@@ -95,6 +95,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { SecuritySettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 // 安全设置表单数据
 const securitySettings = ref<SecuritySettings>({
@@ -115,6 +116,10 @@ const securitySettings = ref<SecuritySettings>({
 
 // 原始安全设置快照，用于计算差异字段
 const originalSecuritySettings = ref<SecuritySettings | null>(null)
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 // 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
@@ -145,10 +150,21 @@ const ipWhitelistInput = computed({
 
 // 保存安全设置，只提交变更字段
 const saveSecuritySettings = async () => {
+  if (
+    localVersion.value !== null &&
+    configVersionStore.currentVersion !== null &&
+    configVersionStore.currentVersion > localVersion.value
+  ) {
+    await ElMessageBox.alert('检测到安全设置已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+      type: 'warning'
+    })
+    return
+  }
   try {
     const payload = getChangedFields(securitySettings.value, originalSecuritySettings.value)
     await settingsAPI.updateSecuritySettings(payload)
     originalSecuritySettings.value = { ...securitySettings.value }
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.success('安全设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -166,6 +182,7 @@ onMounted(async () => {
     const data = await settingsAPI.getSecuritySettings()
     securitySettings.value = data
     originalSecuritySettings.value = { ...data }
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.warning('获取安全设置失败')
   }

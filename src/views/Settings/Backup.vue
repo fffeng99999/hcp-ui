@@ -70,16 +70,24 @@
         </template>
       </el-table-column>
     </el-table>
+    <input
+      ref="backupPathPicker"
+      type="file"
+      webkitdirectory
+      style="display: none"
+      @change="onBackupPathPicked"
+    />
   </BaseCard>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { FolderAdd, Upload, Download } from '@element-plus/icons-vue'
 import * as settingsAPI from '@/api/settings'
 import type { BackupSettings, BackupRecord } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 // 备份设置表单数据
 const backupSettings = ref<BackupSettings>({
@@ -91,6 +99,10 @@ const backupSettings = ref<BackupSettings>({
 
 // 原始备份设置快照，用于计算差异字段
 const originalBackupSettings = ref<BackupSettings | null>(null)
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 // 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
@@ -117,8 +129,15 @@ const backupList = ref<BackupRecord[]>([])
 // 从后端加载备份记录列表
 const loadBackups = async () => {
   try {
-    const data = await settingsAPI.getBackups()
-    backupList.value = data
+    const data = await settingsAPI.getBackupRecords()
+    backupList.value = data.map((item: any) => ({
+      id: item.id,
+      name: item.filename || item.name || 'backup',
+      size: item.size_bytes ? `${Math.round(item.size_bytes / 1024 / 1024)}MB` : item.size || '-',
+      type: item.type || '自动',
+      createdAt: item.created_at || item.createdAt || '-',
+      status: item.status === 'success' ? '完整' : item.status === 'failed' ? '损坏' : item.status || '进行中'
+    }))
   } catch (e) {
     ElMessage.warning('获取备份列表失败')
   }
@@ -126,22 +145,69 @@ const loadBackups = async () => {
 
 // 保存备份设置，只提交变更字段
 const saveBackupSettings = async () => {
+  if (
+    localVersion.value !== null &&
+    configVersionStore.currentVersion !== null &&
+    configVersionStore.currentVersion > localVersion.value
+  ) {
+    await ElMessageBox.alert('检测到备份设置已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+      type: 'warning'
+    })
+    return
+  }
   try {
     const payload = getChangedFields(backupSettings.value, originalBackupSettings.value)
     await settingsAPI.updateBackupSettings(payload)
     originalBackupSettings.value = { ...backupSettings.value }
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.success('备份设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
   }
 }
 
-const selectBackupPath = () => ElMessage.info('打开文件选择器')
+const backupPathPicker = ref<HTMLInputElement | null>(null)
+
+const selectBackupPath = () => {
+  backupPathPicker.value?.click()
+}
+
+const onBackupPathPicked = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  const rawPath = (file as any).path || file.webkitRelativePath || file.name
+  if (!rawPath) return
+  if (rawPath.startsWith('/')) {
+    backupSettings.value.backupPath = rawPath
+  } else {
+    backupSettings.value.backupPath = `/${rawPath.split('/')[0]}`
+  }
+  input.value = ''
+}
+
+// 校验备份路径可用性
+const validateBackupPath = async (path: string) => {
+  if (!path) return
+  try {
+    await settingsAPI.validateStoragePath(path)
+    ElMessage.success('备份路径可用')
+  } catch (e) {
+    ElMessage.error('备份路径不可用，请检查路径或权限')
+  }
+}
+
+watch(
+  () => backupSettings.value.backupPath,
+  (val) => {
+    validateBackupPath(val)
+  }
+)
 
 // 触发一次立即备份任务
 const createBackup = async () => {
   try {
-    await settingsAPI.createBackup()
+    await settingsAPI.triggerBackup()
     ElMessage.success('备份任务已创建')
     loadBackups()
   } catch (e) {
@@ -155,7 +221,7 @@ const restoreBackup = (row: BackupRecord) => {
     .then(async () => {
       try {
         await settingsAPI.restoreBackup(row.id)
-        ElMessage.success('数据恢复中...')
+        ElMessage.success('恢复任务已提交')
       } catch (e) {
         ElMessage.error('恢复失败')
       }
@@ -171,7 +237,7 @@ const deleteBackup = (row: BackupRecord) => {
     .then(async () => {
       try {
         await settingsAPI.deleteBackup(row.id)
-        ElMessage.success('备份已删除')
+        ElMessage.success('备份删除任务已提交')
         loadBackups()
       } catch (e) {
         ElMessage.error('删除失败')
@@ -184,6 +250,7 @@ onMounted(async () => {
     const data = await settingsAPI.getBackupSettings()
     backupSettings.value = data
     originalBackupSettings.value = { ...data }
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.warning('获取备份设置失败')
   }

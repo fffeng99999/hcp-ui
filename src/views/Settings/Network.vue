@@ -69,10 +69,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { NetworkSettings } from '@/types'
 import SettingsCard from '@/components/cards/SettingsCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 // 网络配置表单数据
 const networkSettings = ref<NetworkSettings>({
@@ -91,6 +92,10 @@ const networkSettings = ref<NetworkSettings>({
 
 // 原始网络配置快照，用于计算差异字段
 const originalNetworkSettings = ref<NetworkSettings | null>(null)
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 // 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
@@ -121,10 +126,21 @@ const seedNodesInput = computed({
 
 // 保存网络配置，只提交变更字段
 const saveNetworkSettings = async () => {
+  if (
+    localVersion.value !== null &&
+    configVersionStore.currentVersion !== null &&
+    configVersionStore.currentVersion > localVersion.value
+  ) {
+    await ElMessageBox.alert('检测到网络配置已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+      type: 'warning'
+    })
+    return
+  }
   try {
     const payload = getChangedFields(networkSettings.value, originalNetworkSettings.value)
     await settingsAPI.updateNetworkSettings(payload)
     originalNetworkSettings.value = { ...networkSettings.value }
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.success('网络配置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -141,6 +157,7 @@ onMounted(async () => {
     const data = await settingsAPI.getNetworkSettings()
     networkSettings.value = data
     originalNetworkSettings.value = { ...data }
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.warning('获取网络配置失败')
   }

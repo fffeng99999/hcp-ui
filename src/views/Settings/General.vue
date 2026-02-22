@@ -58,10 +58,11 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { GeneralSettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 const generalSettings = ref<GeneralSettings>({
   systemName: 'HCP-Bench系统',
@@ -76,6 +77,10 @@ const generalSettings = ref<GeneralSettings>({
 
 // 原始通用设置快照，用于计算差异字段
 const originalGeneralSettings = ref<GeneralSettings | null>(null)
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 // 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
@@ -98,10 +103,21 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
 
 // 保存通用设置，只提交变更字段
 const saveGeneralSettings = async () => {
+  if (
+    localVersion.value !== null &&
+    configVersionStore.currentVersion !== null &&
+    configVersionStore.currentVersion > localVersion.value
+  ) {
+    await ElMessageBox.alert('检测到通用设置已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+      type: 'warning'
+    })
+    return
+  }
   try {
     const payload = getChangedFields(generalSettings.value, originalGeneralSettings.value)
     await settingsAPI.updateGeneralSettings(payload)
     originalGeneralSettings.value = { ...generalSettings.value }
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.success('通用设置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -113,6 +129,7 @@ const resetGeneralSettings = async () => {
   try {
     const data = await settingsAPI.getGeneralSettings()
     generalSettings.value = data
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.info('已重置')
   } catch (e) {
     ElMessage.warning('重置失败')
@@ -124,6 +141,7 @@ onMounted(async () => {
     const data = await settingsAPI.getGeneralSettings()
     generalSettings.value = data
     originalGeneralSettings.value = { ...data }
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.warning('获取通用设置失败')
   }

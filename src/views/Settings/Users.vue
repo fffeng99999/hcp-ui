@@ -74,6 +74,7 @@ import ActionTable from '@/components/table/ActionTable.vue'
 import { settingsUsersTable as tableConfig } from '@/config/tables/settingsUsers'
 import type { SystemUser } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 const users = ref<SystemUser[]>([])
 const showUserDialog = ref(false)
@@ -84,6 +85,10 @@ const userForm = ref<Partial<SystemUser>>({
   role: '观察者',
   status: '正常'
 })
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 const getRoleType = (role: string) => {
   const types: Record<string, string> = {
@@ -99,6 +104,7 @@ const loadUsers = async () => {
   try {
     const data = await settingsAPI.getUsers()
     users.value = data
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.error('加载用户列表失败')
   }
@@ -123,6 +129,29 @@ const editUser = (row: SystemUser) => {
 
 const saveUser = async () => {
   try {
+    if (
+      localVersion.value !== null &&
+      configVersionStore.currentVersion !== null &&
+      configVersionStore.currentVersion > localVersion.value
+    ) {
+      await ElMessageBox.alert('检测到用户列表已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+        type: 'warning'
+      })
+      return
+    }
+
+    const validateResult = await settingsAPI.validateUser({
+      id: userForm.value.id,
+      username: userForm.value.username || '',
+      email: userForm.value.email || '',
+      role: userForm.value.role
+    })
+    if (!validateResult.valid) {
+      const messages = validateResult.errors.map(err => `${err.field}: ${err.message}`).join('；')
+      ElMessage.error(messages || '用户信息校验失败')
+      return
+    }
+
     if (isEditing.value && userForm.value.id) {
       await settingsAPI.updateUser(userForm.value.id, userForm.value)
       ElMessage.success('用户更新成功')

@@ -73,14 +73,29 @@
       </el-form-item>
     </el-form>
   </BaseCard>
+  <input
+    ref="dataPathPicker"
+    type="file"
+    webkitdirectory
+    style="display: none"
+    @change="onDataPathPicked"
+  />
+  <input
+    ref="logPathPicker"
+    type="file"
+    webkitdirectory
+    style="display: none"
+    @change="onLogPathPicked"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as settingsAPI from '@/api/settings'
 import type { StorageSettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
+import { useConfigVersionStore } from '@/store/modules/configVersion'
 
 // 存储配置表单数据
 const storageSettings = ref<StorageSettings>({
@@ -96,6 +111,10 @@ const storageSettings = ref<StorageSettings>({
 
 // 原始存储配置快照，用于计算差异字段
 const originalStorageSettings = ref<StorageSettings | null>(null)
+
+// 本地保存的配置版本号，用于与全局版本号对比
+const configVersionStore = useConfigVersionStore()
+const localVersion = ref<number | null>(null)
 
 // 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
@@ -129,15 +148,86 @@ const getStorageColor = (percentage: number) => {
   return '#67C23A'
 }
 
-const selectDataPath = () => ElMessage.info('打开文件选择器')
-const selectLogPath = () => ElMessage.info('打开文件选择器')
+const dataPathPicker = ref<HTMLInputElement | null>(null)
+const logPathPicker = ref<HTMLInputElement | null>(null)
+
+const selectDataPath = () => {
+  dataPathPicker.value?.click()
+}
+
+const selectLogPath = () => {
+  logPathPicker.value?.click()
+}
+
+const resolvePickedPath = (input: HTMLInputElement): string | null => {
+  const file = input.files?.[0]
+  if (!file) return null
+  const rawPath = (file as any).path || file.webkitRelativePath || file.name
+  if (!rawPath) return null
+  if (rawPath.startsWith('/')) return rawPath
+  return `/${rawPath.split('/')[0]}`
+}
+
+const onDataPathPicked = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const picked = resolvePickedPath(input)
+  if (picked) {
+    storageSettings.value.dataPath = picked
+  }
+  input.value = ''
+}
+
+const onLogPathPicked = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  const picked = resolvePickedPath(input)
+  if (picked) {
+    storageSettings.value.logPath = picked
+  }
+  input.value = ''
+}
+
+// 调用后端接口校验路径可用性
+const validatePath = async (label: string, path: string) => {
+  if (!path) return
+  try {
+    await settingsAPI.validateStoragePath(path)
+    ElMessage.success(`${label}可用`)
+  } catch (e) {
+    ElMessage.error(`${label}不可用，请检查路径或权限`)
+  }
+}
+
+watch(
+  () => storageSettings.value.dataPath,
+  (val) => {
+    validatePath('数据存储路径', val)
+  }
+)
+
+watch(
+  () => storageSettings.value.logPath,
+  (val) => {
+    validatePath('日志存储路径', val)
+  }
+)
 
 // 保存存储配置，只提交变更字段
 const saveStorageSettings = async () => {
+  if (
+    localVersion.value !== null &&
+    configVersionStore.currentVersion !== null &&
+    configVersionStore.currentVersion > localVersion.value
+  ) {
+    await ElMessageBox.alert('检测到存储配置已被其他终端修改，请刷新页面后重试', '配置版本过期', {
+      type: 'warning'
+    })
+    return
+  }
   try {
     const payload = getChangedFields(storageSettings.value, originalStorageSettings.value)
     await settingsAPI.updateStorageSettings(payload)
     originalStorageSettings.value = { ...storageSettings.value }
+    localVersion.value = configVersionStore.currentVersion
     ElMessage.success('存储配置已保存')
   } catch (e) {
     ElMessage.error('保存失败')
@@ -164,6 +254,7 @@ onMounted(async () => {
     const data = await settingsAPI.getStorageSettings()
     storageSettings.value = data
     originalStorageSettings.value = { ...data }
+    localVersion.value = configVersionStore.currentVersion
   } catch (e) {
     ElMessage.warning('获取存储配置失败')
   }
