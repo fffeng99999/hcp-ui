@@ -41,11 +41,11 @@
     </nav>
     
     <div class="sidebar-footer">
-      <div class="user-profile">
-        <div class="avatar">Z</div>
+      <div class="user-profile" @click="go('/profile')">
+        <div class="avatar">{{ userInitial }}</div>
         <div class="user-info">
-          <span class="name">ZLF</span>
-          <span class="role">Admin</span>
+          <span class="name">{{ currentUser?.username || '未登录' }}</span>
+          <span class="role">{{ currentUser?.role || 'Visitor' }}</span>
         </div>
       </div>
     </div>
@@ -53,18 +53,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/modules/auth'
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
+const authStore = useAuthStore()
 
 interface MenuItem {
-  path?: string;
-  label: string;
-  icon: string;
-  children?: MenuItem[];
-  expanded?: boolean;
+  path?: string
+  label: string
+  icon: string
+  children?: MenuItem[]
+  expanded?: boolean
 }
 
 const menu = ref<MenuItem[]>([
@@ -76,19 +78,25 @@ const menu = ref<MenuItem[]>([
     label: '扩展功能',
     icon: '🧩',
     expanded: true,
-    children: [
-      { path: '/policies', label: '反操纵策略', icon: '🛡️' }
-    ]
+    children: [{ path: '/policies', label: '反操纵策略', icon: '🛡️' }]
   },
-  { path: '/settings', label: '系统设置', icon: '🔧' },
-]);
+  { path: '/settings', label: '系统设置', icon: '🔧' }
+])
+
+const currentUser = computed(() => authStore.currentUser)
+const userInitial = computed(() => {
+  if (currentUser.value?.username) {
+    return currentUser.value.username.charAt(0).toUpperCase()
+  }
+  return 'U'
+})
 
 function go(path?: string) {
-  if (path && path !== route.path) router.push(path);
+  if (path && path !== route.path) router.push(path)
 }
 
 function toggle(item: MenuItem) {
-  item.expanded = !item.expanded;
+  item.expanded = !item.expanded
 }
 </script>
 

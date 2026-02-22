@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import AppLayout from '@/components/layout/AppLayout.vue'
+import { useAuthStore } from '@/store/modules/auth'
+import * as authAPI from '@/api/auth'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -64,6 +66,16 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: '监控指标',
           icon: 'chart-bar',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'profile',
+        name: 'UserProfile',
+        component: () => import('@/views/Profile/index.vue'),
+        meta: {
+          title: '用户主页',
+          icon: 'user',
           requiresAuth: true
         }
       },
@@ -178,20 +190,30 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach(async (to, _from, next) => {
   document.title = `${to.meta.title} - HCP Benchmark`
   
   // 路由前置守卫：在此处进行简单的登录校验
   if (to.meta.requiresAuth) {
-    const token = localStorage.getItem('auth_token')
-    if (!token) {
-      next({ name: 'Login' })
-    } else {
-      next()
+    const authStore = useAuthStore()
+    if (!authStore.token) {
+      authStore.loadFromStorage()
     }
-  } else {
-    next()
+    if (!authStore.token) {
+      authStore.clearAuth()
+      return next({ name: 'Login' })
+    }
+    if (!authStore.currentUser) {
+      try {
+        const user = await authAPI.getCurrentUser()
+        authStore.updateUser(user)
+      } catch {
+        authStore.clearAuth()
+        return next({ name: 'Login' })
+      }
+    }
   }
+  next()
 })
 
 export default router

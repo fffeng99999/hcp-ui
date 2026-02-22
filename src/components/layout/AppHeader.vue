@@ -20,44 +20,64 @@
         <span class="icon">🔔</span>
         <span class="badge"></span>
       </div>
+      <el-dropdown trigger="click" @command="handleCommand">
+        <div class="icon-btn user-btn">
+          <span class="avatar-text">{{ userInitial }}</span>
+        </div>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item disabled>
+              {{ currentUser?.username || '未登录' }}
+            </el-dropdown-item>
+            <el-dropdown-item divided command="profile">
+              用户主页
+            </el-dropdown-item>
+            <el-dropdown-item command="logout">
+              退出登录
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { Sunny, Moon } from '@element-plus/icons-vue';
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Sunny, Moon } from '@element-plus/icons-vue'
+import { useAuthStore } from '@/store/modules/auth'
+import { useUIStore } from '@/store/modules/ui'
 
-const route = useRoute();
-const isDark = ref(false);
+const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const uiStore = useUIStore()
+
+const currentUser = computed(() => authStore.currentUser)
+const isDark = computed(() => uiStore.theme === 'dark')
+const userInitial = computed(() => {
+  if (currentUser.value?.username) {
+    return currentUser.value.username.charAt(0).toUpperCase()
+  }
+  return 'U'
+})
 
 const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  updateTheme();
-};
+  uiStore.setTheme(isDark.value ? 'light' : 'dark')
+}
 
-const updateTheme = () => {
-  const htmlEl = document.documentElement;
-  if (isDark.value) {
-    htmlEl.classList.add('dark');
-    localStorage.setItem('theme', 'dark');
-  } else {
-    htmlEl.classList.remove('dark');
-    localStorage.setItem('theme', 'light');
+const handleCommand = (command: string) => {
+  if (command === 'logout') {
+    authStore.clearAuth()
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  } else if (command === 'profile') {
+    router.push('/profile')
   }
-};
+}
 
-onMounted(() => {
-  const savedTheme = localStorage.getItem('theme');
-  if (savedTheme === 'dark') {
-    isDark.value = true;
-    document.documentElement.classList.add('dark');
-  } else {
-    isDark.value = false;
-    document.documentElement.classList.remove('dark');
-  }
-});
 </script>
 
 <style scoped lang="scss" src="@/assets/styles/layouts/header.scss"></style>

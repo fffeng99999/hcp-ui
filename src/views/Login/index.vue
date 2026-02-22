@@ -42,9 +42,11 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import http from '@/api/http'
+import { useAuthStore } from '@/store/modules/auth'
+import * as authAPI from '@/api/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const form = reactive({
   username: 'admin',
@@ -61,14 +63,9 @@ const handleLogin = async () => {
 
   try {
     loading.value = true
-    const resp = await http.post<{ token: string }>(
-      '/auth/login',
-      {
-        username: form.username,
-        password: form.password
-      }
-    )
-    localStorage.setItem('auth_token', resp.token)
+    const { token, user } = await authAPI.login(form.username, form.password)
+    authStore.setAuth(token, user)
+    ElMessage.success('登录成功')
     router.push('/')
   } catch (e: any) {
     ElMessage.error(e?.message || '登录失败')

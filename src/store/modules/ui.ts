@@ -19,8 +19,6 @@ export const useUIStore = defineStore('ui', () => {
   function setTheme(newTheme: 'light' | 'dark'): void {
     theme.value = newTheme
     localStorage.setItem('ui_theme', newTheme)
-    // 应用主题逻辑
-    document.documentElement.setAttribute('data-theme', newTheme)
   }
 
   function setLanguage(newLanguage: 'en' | 'zh'): void {
