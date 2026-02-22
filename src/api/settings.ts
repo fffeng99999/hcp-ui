@@ -10,7 +10,6 @@ import type {
   SystemUser,
   BackupRecord
 } from '@/types'
-
 // ================ 通用设置相关接口 ================
 
 // 获取通用设置
@@ -97,6 +96,29 @@ export const restoreBackup = (id: string) => {
 
 export const deleteBackup = (id: string) => {
   return http.delete<void>(`/settings/backups/${id}`)
+}
+
+export interface SystemInfoResponse {
+  systemVersion: string
+  blockchainVersion: string
+  os: string
+  kernelVersion: string
+  cpuDesc: string
+  memoryDesc: string
+  uptime: string
+  goVersion: string
+  dbVersion: string
+  networkLatency: string
+  diskIo: string
+  networkThroughput: string
+  cpuUsage: number
+  memoryUsage: number
+  diskUsage: number
+  configVersion: number
+}
+
+export const getSystemInfo = () => {
+  return http.get<SystemInfoResponse>(endpoints.SETTINGS_SYSTEM)
 }
 
 // ================ 用户管理相关接口 ================

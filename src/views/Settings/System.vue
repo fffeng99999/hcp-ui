@@ -86,8 +86,9 @@ import { Cpu, Monitor, FolderOpened } from '@element-plus/icons-vue'
 import BaseCard from '@/components/common/BaseCard.vue'
 import { API_BASE_URL } from '@/api/config'
 import { useConfigVersionStore } from '@/store/modules/configVersion'
+import { getSystemInfo, type SystemInfoResponse } from '@/api/settings'
 
-const systemInfo = ref({
+const systemInfo = ref<SystemInfoResponse>({
   systemVersion: 'HCP-Bench v1.0.0',
   blockchainVersion: 'v2.5.3',
   os: 'Ubuntu 22.04 LTS x86_64',
@@ -108,6 +109,17 @@ const systemInfo = ref({
 
 const configVersionStore = useConfigVersionStore()
 let eventSource: EventSource | null = null
+let pollingTimer: number | null = null
+
+const loadSystemInfo = async () => {
+  try {
+    const data = await getSystemInfo()
+    systemInfo.value = data
+    configVersionStore.currentVersion = data.configVersion
+  } catch (e) {
+    ElMessage.warning('获取系统信息失败')
+  }
+}
 
 const startSystemStream = () => {
   const streamUrl = `${API_BASE_URL.replace(/\/$/, '')}/system/stream`
@@ -138,12 +150,18 @@ const restartSystem = () => {
 
 onMounted(() => {
   startSystemStream()
+  loadSystemInfo()
+  pollingTimer = window.setInterval(loadSystemInfo, 5000)
 })
 
 onBeforeUnmount(() => {
   if (eventSource) {
     eventSource.close()
     eventSource = null
+  }
+  if (pollingTimer !== null) {
+    window.clearInterval(pollingTimer)
+    pollingTimer = null
   }
 })
 </script>
