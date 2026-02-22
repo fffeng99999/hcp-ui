@@ -1,6 +1,6 @@
 export interface PolicyBase {
   enabled: boolean
-  actions: string[] // 'log' | 'alert' | 'block' | 'punish' | 'freeze' | 'throttle' | 'ban'
+  actions: string[] // 支持的动作：'log' | 'alert' | 'block' 等
 }
 
 export interface FrontRunningPolicy extends PolicyBase {

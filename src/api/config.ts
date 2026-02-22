@@ -3,33 +3,33 @@ export const API_TIMEOUT = 30000
 export const API_RETRY_COUNT = 3
 
 export const endpoints = {
-  // Dashboard
+  // 仪表盘相关接口
   DASHBOARD_METRICS: '/dashboard/metrics',
   DASHBOARD_TRENDS: '/dashboard/trends',
   DASHBOARD_ALERTS: '/dashboard/alerts',
 
-  // Benchmarks
+  // 压测任务相关接口
   BENCHMARKS: '/benchmarks',
   BENCHMARK_DETAIL: '/benchmarks/:id',
   BENCHMARK_START: '/benchmarks/:id/start',
   BENCHMARK_STOP: '/benchmarks/:id/stop',
 
-  // Consensus
+  // 共识配置相关接口
   CONSENSUS_ALGORITHMS: '/consensus/algorithms',
   CONSENSUS_CONFIG: '/consensus/config',
   CONSENSUS_HISTORY: '/consensus/config-history',
 
-  // Anti-Manipulation
+  // 反操纵检测相关接口
   ANTI_MANIPULATION_STRATEGIES: '/anti-manipulation/strategies',
   ANTI_MANIPULATION_EVENTS: '/anti-manipulation/events',
   ANTI_MANIPULATION_STATS: '/anti-manipulation/stats',
 
-  // Metrics
+  // 指标分析相关接口
   METRICS_HISTORICAL: '/metrics/historical',
   METRICS_COMPARE: '/metrics/compare',
   METRICS_EXPORT: '/metrics/export',
 
-  // Settings
+  // 系统设置相关接口
   SETTINGS_GENERAL: '/settings/general',
   SETTINGS_NETWORK: '/settings/network',
   SETTINGS_STORAGE: '/settings/storage',

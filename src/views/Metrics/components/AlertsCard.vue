@@ -28,7 +28,7 @@ import BaseCard from '@/components/cards/DashboardCard.vue'
 const unreadAlerts = ref(5)
 const recentAlerts = ref<any[]>([])
 
-// Mock alerts (since logic was not fully visible in read file, adding mock based on usage)
+// 本地模拟告警数据：实际项目中应从后端接口获取
 recentAlerts.value = [
   { id: 1, timestamp: '2023-10-27 10:00:00', level: '警告', message: '节点3延迟过高' },
   { id: 2, timestamp: '2023-10-27 09:45:00', level: '信息', message: '共识算法切换完成' },

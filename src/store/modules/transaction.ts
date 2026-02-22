@@ -62,12 +62,12 @@ export const useTransactionStore = defineStore('transaction', () => {
     const tx = allTxs.find(t => t.id === txId)
     if (!tx) return
 
-    // Remove from current array
+    // 先从当前所属的数组中移除
     pendingTransactions.value = pendingTransactions.value.filter(t => t.id !== txId)
     confirmedTransactions.value = confirmedTransactions.value.filter(t => t.id !== txId)
     failedTransactions.value = failedTransactions.value.filter(t => t.id !== txId)
 
-    // Add to new array
+    // 再根据新状态加入对应的列表
     tx.status = newStatus
     if (newStatus === 'confirmed') {
       confirmedTransactions.value.push(tx)
@@ -85,7 +85,7 @@ export const useTransactionStore = defineStore('transaction', () => {
   }
 
   return {
-    // State
+    // 状态
     pendingTransactions,
     confirmedTransactions,
     failedTransactions,
@@ -93,11 +93,11 @@ export const useTransactionStore = defineStore('transaction', () => {
     isLoading,
     error,
 
-    // Computed
+    // 计算属性
     totalTransactions,
     confirmationRate,
 
-    // Methods
+    // 方法
     submitTransactions,
     getTransactionDetail,
     updateTransactionStatus,

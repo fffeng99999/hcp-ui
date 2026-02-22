@@ -81,6 +81,7 @@ import * as settingsAPI from '@/api/settings'
 import type { BackupSettings, BackupRecord } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
 
+// 备份设置表单数据
 const backupSettings = ref<BackupSettings>({
   autoBackup: true,
   frequency: 'daily',
@@ -88,8 +89,10 @@ const backupSettings = ref<BackupSettings>({
   backupPath: '/backup/hcp'
 })
 
+// 原始备份设置快照，用于计算差异字段
 const originalBackupSettings = ref<BackupSettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -108,8 +111,10 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 当前备份记录列表
 const backupList = ref<BackupRecord[]>([])
 
+// 从后端加载备份记录列表
 const loadBackups = async () => {
   try {
     const data = await settingsAPI.getBackups()
@@ -119,6 +124,7 @@ const loadBackups = async () => {
   }
 }
 
+// 保存备份设置，只提交变更字段
 const saveBackupSettings = async () => {
   try {
     const payload = getChangedFields(backupSettings.value, originalBackupSettings.value)
@@ -132,6 +138,7 @@ const saveBackupSettings = async () => {
 
 const selectBackupPath = () => ElMessage.info('打开文件选择器')
 
+// 触发一次立即备份任务
 const createBackup = async () => {
   try {
     await settingsAPI.createBackup()
@@ -142,6 +149,7 @@ const createBackup = async () => {
   }
 }
 
+// 从指定备份记录恢复数据
 const restoreBackup = (row: BackupRecord) => {
   ElMessageBox.confirm(`确定从备份 ${row.name} 恢复数据吗?`, '警告', { type: 'warning' })
     .then(async () => {
@@ -154,8 +162,10 @@ const restoreBackup = (row: BackupRecord) => {
     })
 }
 
+// 模拟下载备份文件
 const downloadBackup = (row: BackupRecord) => ElMessage.success(`备份 ${row.name} 下载开始`)
 
+// 删除指定备份记录
 const deleteBackup = (row: BackupRecord) => {
   ElMessageBox.confirm(`确定删除备份 ${row.name} 吗?`, '警告', { type: 'warning' })
     .then(async () => {

@@ -96,6 +96,7 @@ import * as settingsAPI from '@/api/settings'
 import type { SecuritySettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
 
+// 安全设置表单数据
 const securitySettings = ref<SecuritySettings>({
   jwtEnabled: true,
   jwtExpiration: 24,
@@ -112,8 +113,10 @@ const securitySettings = ref<SecuritySettings>({
   ipWhitelist: ['192.168.1.0/24', '10.0.0.0/8']
 })
 
+// 原始安全设置快照，用于计算差异字段
 const originalSecuritySettings = ref<SecuritySettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -132,6 +135,7 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 文本域与 IP 白名单数组之间的双向转换
 const ipWhitelistInput = computed({
   get: () => securitySettings.value.ipWhitelist.join('\n'),
   set: (val) => {
@@ -139,6 +143,7 @@ const ipWhitelistInput = computed({
   }
 })
 
+// 保存安全设置，只提交变更字段
 const saveSecuritySettings = async () => {
   try {
     const payload = getChangedFields(securitySettings.value, originalSecuritySettings.value)
@@ -150,6 +155,7 @@ const saveSecuritySettings = async () => {
   }
 }
 
+// 模拟重新生成安全密钥操作
 const generateNewKeys = () => {
   ElMessageBox.confirm('重新生成密钥将使所有现有会话失效,确定继续吗?', '警告', { type: 'warning' })
     .then(() => ElMessage.success('密钥已重新生成'))

@@ -13,7 +13,7 @@ export interface FixedSectionButton {
   label: string
   type?: 'primary' | 'success' | 'warning' | 'danger' | 'info' | 'text'
   icon?: any
-  event: string // Event name to emit
+  event: string // 触发的事件名称
   show?: (row: any) => boolean
 }
 

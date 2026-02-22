@@ -12,11 +12,11 @@ export interface Node {
   address: string
   port: number
   status: NodeStatus
-  latency: number // ms
-  bandwidth: number // Mbps
-  cpuUsage: number // %
-  memoryUsage: number // %
-  lastHeartbeat: string // ISO datetime
+  latency: number // 网络延迟（毫秒 ms）
+  bandwidth: number // 网络带宽（Mbps）
+  cpuUsage: number // CPU 使用率（百分比）
+  memoryUsage: number // 内存使用率（百分比）
+  lastHeartbeat: string // 最近一次心跳时间（ISO 时间字符串）
   consensusRole: 'leader' | 'validator' | 'observer'
   joinedAt: string
   version: string
@@ -38,7 +38,7 @@ export interface NodeRegistrationRequest {
 export interface NodeDetail extends Node {
   transactions: number
   blocksValidated: number
-  consensusParticipation: number // %
+  consensusParticipation: number // 共识参与度（百分比）
   networkLatencyStats: {
     min: number
     max: number

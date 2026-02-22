@@ -87,7 +87,7 @@ export const useNodeStore = defineStore('node', () => {
         node.status = 'online'
       }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to recover node'
+      error.value = err instanceof Error ? err.message : '恢复节点失败'
       throw err
     }
   }
@@ -97,18 +97,18 @@ export const useNodeStore = defineStore('node', () => {
   }
 
   return {
-    // State
+    // 状态
     nodes,
     selectedNode,
     isLoading,
     error,
 
-    // Computed
+    // 计算属性
     onlineCount,
     offlineCount,
     averageLatency,
 
-    // Methods
+    // 方法
     loadNodes,
     registerNode,
     removeNode,

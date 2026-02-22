@@ -16,13 +16,13 @@ export const useConsensusStore = defineStore('consensus', () => {
   const comparisonIds = ref<string[]>([])
   const isChartExpanded = ref<boolean>(false)
 
-  // Persistence
+  // 本地持久化：记住对比列表与图表展开状态
   const savedComparison = localStorage.getItem('consensus_comparison_ids')
   if (savedComparison) {
     try {
       comparisonIds.value = JSON.parse(savedComparison)
     } catch (e) {
-      console.error('Failed to parse saved comparison ids', e)
+      console.error('解析本地存储的共识对比 ID 失败', e)
     }
   }
 
@@ -31,7 +31,7 @@ export const useConsensusStore = defineStore('consensus', () => {
     try {
       isChartExpanded.value = JSON.parse(savedExpanded)
     } catch (e) {
-      console.error('Failed to parse saved expanded state', e)
+      console.error('解析图表展开状态失败', e)
     }
   }
 
@@ -117,7 +117,7 @@ export const useConsensusStore = defineStore('consensus', () => {
       await consensusAPI.selectAlgorithm(algorithmId, parameters[algorithmId])
       currentAlgorithm.value = algorithmId
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to select algorithm'
+      error.value = err instanceof Error ? err.message : '选择共识算法失败'
       throw err
     } finally {
       isConfiguring.value = false
@@ -131,7 +131,7 @@ export const useConsensusStore = defineStore('consensus', () => {
       await consensusAPI.updateParameter(currentAlgorithm.value, paramName, value)
       parameters[currentAlgorithm.value][paramName] = value
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to update parameter'
+      error.value = err instanceof Error ? err.message : '更新共识参数失败'
       throw err
     } finally {
       isConfiguring.value = false
@@ -146,7 +146,7 @@ export const useConsensusStore = defineStore('consensus', () => {
       currentAlgorithm.value = config.currentAlgorithm
       Object.assign(parameters, config.parameters)
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to load config'
+      error.value = err instanceof Error ? err.message : '加载共识配置失败'
     } finally {
       isLoading.value = false
     }
@@ -161,10 +161,10 @@ export const useConsensusStore = defineStore('consensus', () => {
       try {
         algos = await consensusAPI.getAlgorithms()
       } catch (e) {
-        console.warn('API fetch failed, using mock data')
+        console.warn('获取共识算法列表失败，回退使用本地 Mock 数据')
       }
       
-      // Fallback Mock Data
+      // 如果服务端未返回数据，则使用本地内置的示例算法配置
       if (!algos || algos.length === 0) {
          algos = [
             { 
@@ -206,7 +206,7 @@ export const useConsensusStore = defineStore('consensus', () => {
       }
       algorithms.value = algos.map(a => ({
         ...a,
-        displayName: a.displayName || a.name, // Ensure displayName
+        displayName: a.displayName || a.name, // 确保始终具有展示名称
         icon: a.icon || iconMap[a.id] || 'QuestionFilled',
         color: a.color || colorMap[a.id] || '#909399'
       }))
@@ -236,7 +236,7 @@ export const useConsensusStore = defineStore('consensus', () => {
   }
 
   return {
-    // State
+    // 状态
     algorithms,
     currentAlgorithm,
     parameters,
@@ -246,11 +246,11 @@ export const useConsensusStore = defineStore('consensus', () => {
     comparisonIds,
     isChartExpanded,
 
-    // Computed
+    // 派生数据
     currentConfig,
     comparisonAlgorithms,
 
-    // Methods
+    // 方法
     selectAlgorithm,
     updateParameter,
     loadConfig,

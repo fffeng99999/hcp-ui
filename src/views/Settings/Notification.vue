@@ -90,6 +90,7 @@ import * as settingsAPI from '@/api/settings'
 import type { NotificationSettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
 
+// 通知设置表单数据
 const notificationSettings = ref<NotificationSettings>({
   emailEnabled: true,
   smtpHost: 'smtp.example.com',
@@ -104,8 +105,10 @@ const notificationSettings = ref<NotificationSettings>({
   securityEvents: ['manipulation', 'attack', 'unauthorized']
 })
 
+// 原始通知设置快照，用于计算差异字段
 const originalNotificationSettings = ref<NotificationSettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -124,6 +127,7 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 保存通知设置，只提交变更字段
 const saveNotificationSettings = async () => {
   try {
     const payload = getChangedFields(notificationSettings.value, originalNotificationSettings.value)
@@ -135,6 +139,7 @@ const saveNotificationSettings = async () => {
   }
 }
 
+// 发送一条测试通知，验证通知通路是否可用
 const testNotification = () => ElMessage.success('测试通知已发送')
 
 onMounted(async () => {

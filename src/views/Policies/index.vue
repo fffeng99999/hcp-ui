@@ -522,8 +522,8 @@ const loadEvents = async () => {
     detectionRecords.value = res.items
     totalEvents.value = res.total
   } catch (e) {
-    console.warn('Failed to load events', e)
-    // Fallback/Mock data if API fails to make UI look good
+    console.warn('加载策略检测事件失败', e)
+    // 当接口不可用时使用内置示例数据，保证页面展示完整
     if (detectionRecords.value.length === 0) {
       detectionRecords.value = [
         {
@@ -546,7 +546,7 @@ const loadStats = async () => {
     const data = await policyAPI.getStats()
     if (data) stats.value = data
   } catch (e) {
-    console.warn('Failed to load stats, using defaults', e)
+    console.warn('加载策略统计信息失败，使用默认示例数据', e)
     stats.value = {
       totalDetected: 127,
       interceptionRate: 92.5,

@@ -25,9 +25,9 @@ export interface Transaction {
  * 交易提交请求
  */
 export interface TransactionSubmitRequest {
-  count: number // 批量提交数量
-  rate: number // tps
-  size: number // 字节
+  count: number // 批量提交的交易数量
+  rate: number // 目标发送速率（tps）
+  size: number // 单笔交易大小（字节）
   pattern: 'sequential' | 'random' | 'hotspot'
 }
 
@@ -39,8 +39,8 @@ export interface TransactionStats {
   pendingTransactions: number
   confirmedTransactions: number
   failedTransactions: number
-  confirmationRate: number // %
-  averageConfirmationTime: number // ms
+  confirmationRate: number // 成功确认率（百分比）
+  averageConfirmationTime: number // 平均确认时间（毫秒 ms）
   averageGasUsed: number
 }
 

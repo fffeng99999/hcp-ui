@@ -52,6 +52,6 @@ export const exportData = (params: {
  */
 export const getTrendAnalysis = (params: {
   metric: string
-  period: string // '1h' | '1d' | '1w'
+  period: string // 时间周期：'1h' | '1d' | '1w'
 }): Promise<any> =>
   http.get('/analysis/trends', { params })

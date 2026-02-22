@@ -74,8 +74,10 @@ const generalSettings = ref<GeneralSettings>({
   rateLimit: 1000
 })
 
+// 原始通用设置快照，用于计算差异字段
 const originalGeneralSettings = ref<GeneralSettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -94,6 +96,7 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 保存通用设置，只提交变更字段
 const saveGeneralSettings = async () => {
   try {
     const payload = getChangedFields(generalSettings.value, originalGeneralSettings.value)
@@ -105,6 +108,7 @@ const saveGeneralSettings = async () => {
   }
 }
 
+// 重新拉取接口数据覆盖本地表单
 const resetGeneralSettings = async () => {
   try {
     const data = await settingsAPI.getGeneralSettings()

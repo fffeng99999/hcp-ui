@@ -486,7 +486,7 @@ onMounted(() => {
   }
 }
 
-// iOS Design overrides
+// iOS 风格搜索框样式重写
 .ios-search {
   :deep(.el-input__wrapper) {
     border-radius: 20px;

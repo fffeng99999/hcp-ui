@@ -6,13 +6,13 @@ import { useConsensusStore } from '@/store/modules/consensus'
 import * as analysisAPI from '@/api/analysis'
 import ElementPlus, { ElSwitch, ElMessage } from 'element-plus'
 
-// Mock API
+// 模拟分析相关 API
 vi.mock('@/api/analysis', () => ({
   getAlgorithmComparison: vi.fn(),
   getPerformanceLimits: vi.fn(),
 }))
 
-// Mock Element Plus Message
+// 模拟 Element Plus 的全局消息组件
 vi.mock('element-plus', async () => {
   const actual = await vi.importActual('element-plus')
   return {

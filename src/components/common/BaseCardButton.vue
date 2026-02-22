@@ -32,10 +32,10 @@ const emit = defineEmits<{
 const elType = computed(() => {
   switch (props.type) {
     case 'primary': return 'primary'
-    case 'outline': return 'primary' // Outline usually implies primary color border
-    case 'text': return '' // Text button, type handled by :text prop
+    case 'outline': return 'primary' // 描边按钮一般仍使用主色系
+    case 'text': return '' // 文字按钮，通过 :text 属性控制样式
     case 'secondary':
-    default: return '' // Default button
+    default: return '' // 默认按钮类型，保持 Element Plus 默认样式
   }
 })
 
@@ -47,5 +47,5 @@ const handleClick = (event: MouseEvent) => {
 </script>
 
 <style scoped lang="scss">
-/* No custom styles needed - inheriting global Element Plus overrides */
+/* 此处不做单独样式覆盖，直接继承全局的 Element Plus 重写样式 */
 </style>

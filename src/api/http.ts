@@ -4,7 +4,7 @@ import type { ApiResponse } from '@/types'
 class HttpClient {
   async get<T = any>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const resp = await axiosInstance.get<any, ApiResponse<T>>(url, config)
-    // axiosInstance interceptor returns response.data directly
+    // axios 实例的拦截器会直接返回 response.data
     const apiResp = resp as unknown as ApiResponse<T>
     if (apiResp.code !== 0) {
       throw new Error(apiResp.message || 'Unknown error')

@@ -47,7 +47,7 @@ import HealthScoreCard from './components/HealthScoreCard.vue'
 import ConsensusComparisonTable from './components/ConsensusComparisonTable.vue'
 import AlertsCard from './components/AlertsCard.vue'
 
-// Stores
+// 引入各个 Pinia Store
 const performanceStore = usePerformanceStore()
 const nodeStore = useNodeStore()
 const consensusStore = useConsensusStore()

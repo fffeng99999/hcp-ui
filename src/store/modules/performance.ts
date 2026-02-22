@@ -119,20 +119,20 @@ export const usePerformanceStore = defineStore('performance', () => {
   }
 
   return {
-    // State
+    // 状态
     metrics,
     history,
     isMonitoring,
     isLoading,
     error,
 
-    // Computed
+    // 计算属性
     averageTps,
     averageLatency,
     maxTps,
     minLatency,
 
-    // Methods
+    // 方法
     loadInitialData,
     startMonitoring,
     stopMonitoring,

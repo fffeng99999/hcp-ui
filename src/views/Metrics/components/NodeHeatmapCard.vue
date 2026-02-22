@@ -44,7 +44,7 @@ const initHeatmapChart = async () => {
   
   const nodes = nodeStore.nodes.map(n => n.name || n.id)
   const hours = ['当前']
-  // Mock data as in original file
+  // 使用随机数生成示例热力图数据，后续可替换为真实监控指标
   const data: any[] = nodes.map((_, j) => [j, 0, Math.floor(Math.random() * 100)])
   
   const option = {

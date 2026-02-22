@@ -86,15 +86,15 @@ const props = defineProps<{
 
 const emit = defineEmits(['view', 'edit', 'delete', 'start', 'stop', 'pause', 'download', 'duplicate', 'selection-change'])
 
-// Process columns to enforce cascading fixed logic
+// 处理列配置，统一控制固定列的级联逻辑
 const processedColumns = computed(() => {
   const cols = [...props.config.columns]
-  let isPrevFixed = true // Start true for the first column check
+  let isPrevFixed = true // 初始为 true，用于检查首列是否固定
 
   return cols.map((col, index) => {
     const newCol = { ...col }
 
-    // First column can be fixed if configured
+    // 第一列：如果配置为 fixed，则固定在左侧
     if (index === 0) {
       if (newCol.fixed === true || newCol.fixed === 'left') {
         newCol.fixed = 'left'
@@ -104,7 +104,7 @@ const processedColumns = computed(() => {
         isPrevFixed = false
       }
     } else {
-      // Subsequent columns: only fixed if previous was fixed AND this is configured fixed
+      // 后续列：仅当前一列固定且本列也声明 fixed 时才固定
       if (isPrevFixed && (newCol.fixed === true || newCol.fixed === 'left')) {
         newCol.fixed = 'left'
         isPrevFixed = true

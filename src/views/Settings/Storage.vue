@@ -82,6 +82,7 @@ import * as settingsAPI from '@/api/settings'
 import type { StorageSettings } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
 
+// 存储配置表单数据
 const storageSettings = ref<StorageSettings>({
   dataPath: '/data/hcp',
   logPath: '/var/log/hcp',
@@ -93,8 +94,10 @@ const storageSettings = ref<StorageSettings>({
   archiveThreshold: 50
 })
 
+// 原始存储配置快照，用于计算差异字段
 const originalStorageSettings = ref<StorageSettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -113,11 +116,13 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 存储使用率展示相关状态
 const optimizing = ref(false)
 const storageUsed = ref(385)
 const storageTotal = ref(1024)
 const storageUsage = computed(() => Math.round((storageUsed.value / storageTotal.value) * 100))
 
+// 根据使用率返回进度条颜色
 const getStorageColor = (percentage: number) => {
   if (percentage >= 90) return '#F56C6C'
   if (percentage >= 70) return '#E6A23C'
@@ -127,6 +132,7 @@ const getStorageColor = (percentage: number) => {
 const selectDataPath = () => ElMessage.info('打开文件选择器')
 const selectLogPath = () => ElMessage.info('打开文件选择器')
 
+// 保存存储配置，只提交变更字段
 const saveStorageSettings = async () => {
   try {
     const payload = getChangedFields(storageSettings.value, originalStorageSettings.value)
@@ -138,6 +144,7 @@ const saveStorageSettings = async () => {
   }
 }
 
+// 模拟存储优化操作
 const optimizeStorage = () => {
   optimizing.value = true
   setTimeout(() => {
@@ -146,6 +153,7 @@ const optimizeStorage = () => {
   }, 2000)
 }
 
+// 模拟清理垃圾数据操作
 const cleanupStorage = () => {
   ElMessageBox.confirm('确定清理垃圾数据吗?此操作不可恢复', '警告', { type: 'warning' })
     .then(() => ElMessage.success('清理完成,释放空间 15.8GB'))

@@ -53,7 +53,7 @@ export const useBenchmarkStore = defineStore('benchmark', () => {
       await benchmarkAPI.stopTask(id)
       const task = tasks.value.find(t => t.id === id)
       if (task) {
-        task.status = 'completed' // Or whatever status appropriate for stopped
+        task.status = 'completed' // 根据业务需要可改为单独的“已停止”状态
       }
     } catch (err) {
       console.error(`Failed to stop task ${id}:`, err)

@@ -74,6 +74,7 @@ import * as settingsAPI from '@/api/settings'
 import type { NetworkSettings } from '@/types'
 import SettingsCard from '@/components/cards/SettingsCard.vue'
 
+// 网络配置表单数据
 const networkSettings = ref<NetworkSettings>({
   listenAddress: '0.0.0.0',
   p2pPort: 30303,
@@ -88,8 +89,10 @@ const networkSettings = ref<NetworkSettings>({
   seedNodes: ['192.168.1.10:30303', '192.168.1.11:30303', '192.168.1.12:30303']
 })
 
+// 原始网络配置快照，用于计算差异字段
 const originalNetworkSettings = ref<NetworkSettings | null>(null)
 
+// 计算对象差异，只提交被修改的字段给后端
 const getChangedFields = <T extends Record<string, any>>(current: T, original: T | null): Partial<T> => {
   if (!original) return { ...current }
   const diff: Partial<T> = {}
@@ -108,6 +111,7 @@ const getChangedFields = <T extends Record<string, any>>(current: T, original: T
   return diff
 }
 
+// 文本域与种子节点数组之间的双向转换
 const seedNodesInput = computed({
   get: () => networkSettings.value.seedNodes.join('\n'),
   set: (val) => {
@@ -115,6 +119,7 @@ const seedNodesInput = computed({
   }
 })
 
+// 保存网络配置，只提交变更字段
 const saveNetworkSettings = async () => {
   try {
     const payload = getChangedFields(networkSettings.value, originalNetworkSettings.value)
@@ -126,6 +131,7 @@ const saveNetworkSettings = async () => {
   }
 }
 
+// 模拟网络连通性测试
 const testNetworkConnection = () => {
   ElMessage.success('网络连接测试成功')
 }

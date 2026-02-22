@@ -1,28 +1,28 @@
 import { vi } from 'vitest'
 
-// Mock ResizeObserver
+// 模拟 ResizeObserver，避免测试环境报错
 global.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
 }
 
-// Mock matchMedia
+// 模拟 window.matchMedia，提供最小实现
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: vi.fn(), // deprecated
-    removeListener: vi.fn(), // deprecated
+    addListener: vi.fn(), // 已废弃 API，仅为兼容旧代码
+    removeListener: vi.fn(), // 已废弃 API，仅为兼容旧代码
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
 })
 
-// Mock ECharts
+// 模拟 ECharts，提供空实现以便组件挂载
 vi.mock('echarts', () => ({
   init: vi.fn(() => ({
     setOption: vi.fn(),

@@ -41,12 +41,12 @@ export const useUIStore = defineStore('ui', () => {
   }
 
   return {
-    // State
+    // 状态
     sidebarCollapsed,
     theme,
     language,
 
-    // Methods
+    // 方法
     toggleSidebar,
     setTheme,
     setLanguage,

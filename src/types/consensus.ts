@@ -119,8 +119,8 @@ export interface ConsensusConfig {
 export interface BenchmarkConfig {
   algorithmId: ConsensusAlgorithmType
   parameters: ConsensusParameters
-  duration: number // 秒
-  transactionRate: number // tps
+  duration: number // 压测持续时间（秒）
+  transactionRate: number // 目标交易速率（tps）
   nodeCount: number
   faultInjectionConfig?: FaultInjectionConfig
 }
@@ -144,7 +144,7 @@ export interface BenchmarkResult {
  */
 export interface FaultInjectionConfig {
   type: 'latency' | 'packet_loss' | 'byzantine' | 'node_crash'
-  severity: number // 0-100
+  severity: number // 影响程度 0-100
   affectedNodes: string[]
-  duration: number // 秒
+  duration: number // 故障持续时间（秒）
 }

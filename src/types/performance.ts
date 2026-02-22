@@ -2,14 +2,14 @@
  * 性能指标
  */
 export interface PerformanceMetrics {
-  tps: number // transactions per second
-  latency: number // ms
-  throughput: number // bytes per second
-  blockTime: number // ms
-  timestamp: string // ISO datetime
-  cpuUsage: number // %
-  memoryUsage: number // %
-  networkBandwidth: number // Mbps
+  tps: number // 每秒交易数（transactions per second）
+  latency: number // 请求延迟（毫秒 ms）
+  throughput: number // 吞吐量（每秒字节数 bytes/s）
+  blockTime: number // 区块出块时间（毫秒 ms）
+  timestamp: string // 指标采集时间（ISO 时间字符串）
+  cpuUsage: number // CPU 使用率（百分比）
+  memoryUsage: number // 内存使用率（百分比）
+  networkBandwidth: number // 网络带宽（Mbps）
 }
 
 /**
@@ -17,7 +17,7 @@ export interface PerformanceMetrics {
  */
 export interface PerformanceHistory extends PerformanceMetrics {
   id: string
-  period: string // 时间区间标识
+  period: string // 时间区间标识（例如 1m、5m、1h）
 }
 
 /**
