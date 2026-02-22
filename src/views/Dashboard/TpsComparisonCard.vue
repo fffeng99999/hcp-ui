@@ -206,16 +206,18 @@ const initTpsChart = async () => {
         }
       })
     } catch (error) {
-      console.warn('Using fallback TPS data')
-      xAxisData = ['10节点', '30节点', '50节点', '100节点', '200节点']
-      legendData = selectedAlgos.map(a => a.displayName)
-      series = selectedAlgos.map((algo, index) => ({
-        name: algo.displayName,
-        type: 'bar',
-        barMaxWidth: 20,
-        itemStyle: { borderRadius: [4, 4, 0, 0], color: algo.color || '#34c759' },
-        data: [2800, 2200, 1850, 1200, 800].map(v => Math.max(0, Math.floor(v - index * 200 + (Math.random() * 200))))
-      }))
+      tpsChart?.setOption({
+        title: {
+          text: '算法对比数据加载失败',
+          left: 'center',
+          top: 'center',
+          textStyle: { color: colors.text }
+        },
+        xAxis: { show: false },
+        yAxis: { show: false },
+        series: []
+      }, true)
+      return
     }
 
     const option = {

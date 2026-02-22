@@ -51,14 +51,18 @@ const initPerformanceLimitChart = async () => {
     try {
       data = await analysisAPI.getPerformanceLimits(selectedConsensus.value)
     } catch (error) {
-      console.warn('Using fallback Performance Limit data')
-      data = [
-        { nodeCount: 10, actualTps: 2800, theoreticalTps: 3500 },
-        { nodeCount: 30, actualTps: 2200, theoreticalTps: 2800 },
-        { nodeCount: 50, actualTps: 1850, theoreticalTps: 2400 },
-        { nodeCount: 100, actualTps: 1200, theoreticalTps: 1800 },
-        { nodeCount: 200, actualTps: 800, theoreticalTps: 1200 }
-      ]
+      performanceLimitChart?.setOption({
+        title: {
+          text: '性能界限数据加载失败',
+          left: 'center',
+          top: 'center',
+          textStyle: { color: colors.text }
+        },
+        xAxis: { show: false },
+        yAxis: { show: false },
+        series: []
+      })
+      return
     }
 
     const option = {

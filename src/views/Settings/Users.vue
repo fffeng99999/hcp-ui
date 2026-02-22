@@ -100,19 +100,7 @@ const loadUsers = async () => {
     const data = await settingsAPI.getUsers()
     users.value = data
   } catch (e) {
-    if (users.value.length === 0) {
-      users.value = [
-        {
-          id: '1',
-          username: 'admin',
-          email: 'admin@hcp.com',
-          role: '超级管理员',
-          status: '正常',
-          lastLogin: '2026-01-29 10:30:00',
-          createdAt: '2025-12-01 09:00:00'
-        }
-      ]
-    }
+    ElMessage.error('加载用户列表失败')
   }
 }
 
