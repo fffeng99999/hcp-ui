@@ -13,7 +13,7 @@
           <div class="algo-header">
             <div class="icon-wrapper" :style="{ background: algo.color + '20', color: algo.color }">
               <el-icon :size="24">
-                <component :is="iconComponents[algo.icon as string]" />
+                <component :is="iconComponents[algo.icon as string] || QuestionFilled" />
               </el-icon>
             </div>
             <div class="algo-info">
@@ -297,7 +297,7 @@ import { storeToRefs } from 'pinia'
 import { ElMessage } from 'element-plus'
 import { 
   Setting, Checked, Document, DataLine, 
-  TrendCharts, Timer, Connection, Plus
+  TrendCharts, Timer, Connection, Plus, QuestionFilled
 } from '@element-plus/icons-vue'
 import { useConsensusStore } from '@/store/modules/consensus'
 import BaseCard from '@/components/common/BaseCard.vue'
@@ -307,7 +307,7 @@ import { consensusComparisonTable } from '@/config/tables/consensusComparison'
 const store = useConsensusStore()
 const { algorithms: consensusAlgorithms, currentAlgorithm: selectedAlgo, parameters, isLoading: loading } = storeToRefs(store)
 const activeTab = ref('basic')
-const iconComponents: Record<string, any> = { Setting, Checked, Document, DataLine, Plus }
+const iconComponents: Record<string, any> = { Setting, Checked, Document, DataLine, Connection, Plus, QuestionFilled }
 
 const config = computed(() => parameters.value[selectedAlgo.value])
 
@@ -396,21 +396,19 @@ onMounted(() => {
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid transparent;
-  background: var(--ios-card-bg);
-  backdrop-filter: blur(20px);
+  border: 1px solid var(--ios-border-color);
+  background-color: var(--ios-bg-secondary);
   border-radius: var(--ios-radius-l);
-  box-shadow: var(--ios-shadow-s);
+  box-shadow: var(--ios-shadow-1);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: var(--ios-shadow-m);
+    box-shadow: var(--ios-shadow-2);
   }
 
   &.active {
     border-color: var(--ios-blue);
-    background: linear-gradient(145deg, rgba(var(--ios-blue-rgb), 0.05) 0%, transparent 100%),
-                var(--ios-card-bg);
+    background-color: var(--ios-fill-color);
   }
 }
 
@@ -442,7 +440,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   padding-top: 16px;
-  border-top: 1px solid var(--ios-border);
+  border-top: 1px solid var(--ios-border-color);
 
   .stat-item {
     display: flex;
@@ -467,14 +465,14 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 2px dashed var(--ios-border);
+  border: 1px dashed var(--ios-border-color);
   background: transparent;
 
   .add-icon {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--ios-gray-bg);
+    background: var(--ios-fill-color);
     color: var(--ios-text-secondary);
     display: flex;
     align-items: center;
@@ -534,7 +532,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   padding: 16px;
-  background: var(--ios-gray-bg);
+  background: var(--ios-fill-color);
   border-radius: var(--ios-radius-m);
 
   .metric-icon-wrapper {

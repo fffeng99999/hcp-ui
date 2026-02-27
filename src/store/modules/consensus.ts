@@ -8,7 +8,8 @@ import type {
   TPBFTParameters,
   PBFTParameters,
   HotStuffParameters,
-  LeiosParameters
+  LeiosParameters,
+  RaftParameters
 } from '@/types'
 
 export const useConsensusStore = defineStore('consensus', () => {
@@ -45,7 +46,7 @@ export const useConsensusStore = defineStore('consensus', () => {
 
   const currentAlgorithm = ref<ConsensusAlgorithmType>('tPBFT')
 
-  const parameters = reactive<Record<ConsensusAlgorithmType, any>>({
+  const parameters = reactive<Record<string, any>>({
     tPBFT: {
       f: 66,
       nodeSelectionMethod: 'equity',
@@ -90,7 +91,18 @@ export const useConsensusStore = defineStore('consensus', () => {
       fE: 0.2,
       sliceLength: 32,
       pipelineLength: 7
-    } as LeiosParameters
+    } as LeiosParameters,
+    Raft: {
+      viewChangeTimeout: 10000,
+      blockInterval: 1,
+      maxBlockSize: 4,
+      txPoolSize: 50000,
+      minNodes: 3,
+      consensusTimeout: 5000,
+      confirmations: 1,
+      networkLatency: 200,
+      batchSize: 1000
+    } as RaftParameters
   })
 
   const isConfiguring = ref<boolean>(false)
@@ -110,10 +122,27 @@ export const useConsensusStore = defineStore('consensus', () => {
       .filter((algo): algo is ConsensusAlgorithm => !!algo)
   })
 
+  function isConsensusAlgorithmType(value: unknown): value is ConsensusAlgorithmType {
+    return (
+      value === 'tPBFT' ||
+      value === 'PBFT' ||
+      value === 'HotStuff' ||
+      value === 'Leios' ||
+      value === 'Raft'
+    )
+  }
+
+  function ensureParameters(algorithmId: string): void {
+    if (parameters[algorithmId]) return
+    const base = parameters.tPBFT ? JSON.parse(JSON.stringify(parameters.tPBFT)) : {}
+    parameters[algorithmId] = base
+  }
+
   async function selectAlgorithm(algorithmId: ConsensusAlgorithmType): Promise<void> {
     try {
       isConfiguring.value = true
       error.value = null
+      ensureParameters(algorithmId)
       await consensusAPI.selectAlgorithm(algorithmId, parameters[algorithmId])
       currentAlgorithm.value = algorithmId
     } catch (err) {
@@ -143,8 +172,12 @@ export const useConsensusStore = defineStore('consensus', () => {
       isLoading.value = true
       error.value = null
       const config = await consensusAPI.getConfig()
-      currentAlgorithm.value = config.currentAlgorithm
-      Object.assign(parameters, config.parameters)
+      const nextAlgorithm = isConsensusAlgorithmType(config.currentAlgorithm)
+        ? config.currentAlgorithm
+        : 'tPBFT'
+      currentAlgorithm.value = nextAlgorithm
+      if (config.parameters) Object.assign(parameters, config.parameters)
+      ensureParameters(nextAlgorithm)
     } catch (err) {
       error.value = err instanceof Error ? err.message : '加载共识配置失败'
     } finally {
@@ -187,7 +220,7 @@ export const useConsensusStore = defineStore('consensus', () => {
               id: 'Raft', name: 'Raft', displayName: 'Raft', description: 'Crash Fault Tolerance', category: 'Modern',
               avgTps: 3000, peakTps: 3500, avgLatency: 100, p95Latency: 150, p99Latency: 200, cpuUsage: 20, memoryUsage: 512, score: 82
             }
-         ] as any
+         ]
       }
 
       const iconMap: Record<string, string> = {
@@ -210,6 +243,8 @@ export const useConsensusStore = defineStore('consensus', () => {
         icon: a.icon || iconMap[a.id] || 'QuestionFilled',
         color: a.color || colorMap[a.id] || '#909399'
       }))
+
+      algorithms.value.forEach(a => ensureParameters(a.id))
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load algorithms'
       throw err

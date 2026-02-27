@@ -2,7 +2,7 @@ import type { PerformanceMetrics } from './performance'
 /**
  * 共识算法类型
  */
-export type ConsensusAlgorithmType = 'tPBFT' | 'PBFT' | 'HotStuff' | 'Leios'
+export type ConsensusAlgorithmType = 'tPBFT' | 'PBFT' | 'HotStuff' | 'Leios' | 'Raft'
 
 /**
  * 共识算法定义
@@ -94,6 +94,8 @@ export interface LeiosParameters {
   pipelineLength: number
 }
 
+export interface RaftParameters extends CommonConsensusParameters {}
+
 /**
  * 统一共识参数类型
  */
@@ -102,6 +104,7 @@ export type ConsensusParameters =
   | PBFTParameters 
   | HotStuffParameters 
   | LeiosParameters
+  | RaftParameters
 
 /**
  * 共识配置
