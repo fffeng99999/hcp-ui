@@ -34,6 +34,9 @@
                 <span class="nav-icon">{{ sub.icon }}</span>
                 <span class="nav-label">{{ sub.label }}</span>
               </div>
+              <div v-if="item.expanded && item.placeholder" class="submenu-placeholder">
+                {{ item.placeholder }}
+              </div>
             </div>
           </div>
         </template>
@@ -67,6 +70,7 @@ interface MenuItem {
   icon: string
   children?: MenuItem[]
   expanded?: boolean
+  placeholder?: string
 }
 
 const menu = ref<MenuItem[]>([
@@ -77,8 +81,10 @@ const menu = ref<MenuItem[]>([
   {
     label: '扩展功能',
     icon: '🧩',
-    expanded: true,
-    children: [{ path: '/policies', label: '反操纵策略', icon: '🛡️' }]
+    expanded: false,
+    // children: [{ path: '/policies', label: '反操纵策略', icon: '🛡️' }],
+    children: [],
+    placeholder: '功能开发中，敬请期待'
   },
   { path: '/settings', label: '系统设置', icon: '🔧' }
 ])

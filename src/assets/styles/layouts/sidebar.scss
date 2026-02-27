@@ -101,6 +101,16 @@
   }
 }
 
+.submenu-placeholder {
+  padding: 10px 16px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--ios-text-secondary);
+  opacity: 0.85;
+  user-select: none;
+}
+
 .sidebar-footer {
   padding: 24px;
   border-top: 1px solid var(--ios-border-color);

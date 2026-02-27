@@ -49,10 +49,21 @@ const routes: RouteRecordRaw[] = [
           requiresAuth: true
         }
       },
+      // {
+      //   path: 'policies',
+      //   name: 'Policies',
+      //   component: () => import('@/views/Policies/index.vue'),
+      //   meta: {
+      //     title: '反操纵策略',
+      //     icon: 'shield',
+      //     requiresAuth: true
+      //   }
+      // },
+
+      // 以下内容又上面的修改，改回来要删除
       {
         path: 'policies',
-        name: 'Policies',
-        component: () => import('@/views/Policies/index.vue'),
+        redirect: { name: 'Dashboard' },
         meta: {
           title: '反操纵策略',
           icon: 'shield',
