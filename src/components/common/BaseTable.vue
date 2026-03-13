@@ -40,6 +40,8 @@
         :label="config.fixedSection.label"
         :width="config.fixedSection.width"
         align="center"
+          class-name="fixed-section-column"
+        label-class-name="fixed-section-column"
       >
         <template #default="scope">
           <!-- Operation Type: Buttons -->
@@ -48,9 +50,9 @@
               <el-button
                 v-if="!btn.show || btn.show?.(scope.row)"
                 :type="btn.type || 'primary'"
+                class="ios-table-action-btn"
                 size="small"
                 :icon="btn.icon"
-                link
                 @click="$emit(btn.event as any, scope.row)"
               >
                 {{ btn.label }}
@@ -134,5 +136,15 @@ const processedColumns = computed(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.base-table-container :deep(.fixed-section-column) {
+  background-color: var(--ios-bg-tertiary, #f0f0f5) !important;
+}
+
+.base-table-container :deep(.el-table__fixed-right),
+.base-table-container :deep(.el-table__fixed-right .el-table__cell),
+.base-table-container :deep(.el-table__fixed-right-patch) {
+  background-color: var(--ios-bg-tertiary, #f0f0f5) !important;
 }
 </style>

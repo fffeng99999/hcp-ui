@@ -72,8 +72,10 @@ import { ArrowUp, ArrowDown, Close, Setting, ZoomIn, ZoomOut } from '@element-pl
 import { ElMessage } from 'element-plus'
 import { useConsensusStore } from '@/store/modules/consensus'
 import * as analysisAPI from '@/api/analysis'
+import { useUIStore } from '@/store/modules/ui'
 
 const consensusStore = useConsensusStore()
+const uiStore = useUIStore()
 const tpsChartRef = ref<HTMLElement>()
 let tpsChart: echarts.ECharts | null = null
 const maxAllowed = computed(() => (consensusStore.isChartExpanded ? 10 : 4))
@@ -144,12 +146,7 @@ const toggleExpand = () => {
   })
 }
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-let themeObserver: MutationObserver | null = null
-
-const updateTheme = () => {
-  isDark.value = document.documentElement.classList.contains('dark')
-}
+const isDark = computed(() => uiStore.theme === 'dark')
 
 const getChartColors = () => ({
   text: isDark.value ? '#C5C5D2' : '#8e8e93',
@@ -270,15 +267,12 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  themeObserver = new MutationObserver(updateTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   initTpsChart()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  themeObserver?.disconnect()
   tpsChart?.dispose()
 })
 </script>

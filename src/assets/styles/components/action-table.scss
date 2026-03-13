@@ -81,7 +81,7 @@
 }
 
 .action-table-card :deep(.action-column) {
-  background-color: var(--ios-bg-primary) !important;
+  background-color: var(--ios-bg-tertiary) !important;
 }
 
 .action-table-card :deep(.action-column .cell) {
@@ -91,7 +91,7 @@
 .action-table-card :deep(.el-table__fixed-right),
 .action-table-card :deep(.el-table__fixed-right .el-table__cell),
 .action-table-card :deep(.el-table__fixed-right-patch) {
-  background-color: var(--ios-bg-primary) !important;
+  background-color: var(--ios-bg-tertiary) !important;
 }
 
 .action-table-actions {
@@ -104,10 +104,10 @@
 }
 
 .action-table-actions .el-button {
-  padding: 4px 10px;
+  border-radius: 9999px;
+  height: 28px;
+  padding: 0 14px;
   font-size: 12px;
-  line-height: 16px;
-  height: 24px;
 }
 
 .action-table-actions .el-button + .el-button {

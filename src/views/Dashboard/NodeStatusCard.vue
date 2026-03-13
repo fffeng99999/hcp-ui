@@ -8,20 +8,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import { useNodeStore } from '@/store/modules/node'
+import { useUIStore } from '@/store/modules/ui'
 
 const nodeStore = useNodeStore()
+const uiStore = useUIStore()
 const nodeStatusChartRef = ref<HTMLElement>()
 let nodeStatusChart: echarts.ECharts | null = null
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-let themeObserver: MutationObserver | null = null
-
-const updateTheme = () => {
-  isDark.value = document.documentElement.classList.contains('dark')
-}
+const isDark = computed(() => uiStore.theme === 'dark')
 
 const getChartColors = () => ({
   text: isDark.value ? '#C5C5D2' : '#8e8e93',
@@ -90,15 +87,12 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  themeObserver = new MutationObserver(updateTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   initNodeStatusChart()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
-  themeObserver?.disconnect()
   nodeStatusChart?.dispose()
 })
 </script>

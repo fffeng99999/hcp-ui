@@ -1,5 +1,6 @@
 <template>
   <n-config-provider :theme="naiveTheme">
+    <n-global-style />
     <div class="app-container">
       <router-view />
     </div>
@@ -8,7 +9,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
-import { darkTheme, NConfigProvider } from 'naive-ui'
+import { darkTheme, NConfigProvider, NGlobalStyle } from 'naive-ui'
 import { usePerformanceStore } from '@/store/modules/performance'
 import { useUIStore } from '@/store/modules/ui'
 import { useAuthStore } from '@/store/modules/auth'

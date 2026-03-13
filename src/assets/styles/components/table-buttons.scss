@@ -1,0 +1,56 @@
+.el-table .ios-table-action-btn,
+.el-table .operation-buttons .el-button,
+.el-table .action-table-actions .el-button,
+.el-table .table-action-buttons .el-button {
+  border-radius: 9999px;
+  height: 28px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-width: 1px;
+}
+
+.el-table .ios-table-action-btn.is-link,
+.el-table .operation-buttons .el-button.is-link,
+.el-table .action-table-actions .el-button.is-link,
+.el-table .table-action-buttons .el-button.is-link {
+  background-color: var(--ios-bg-secondary, #ffffff);
+  border-color: var(--ios-border-color, rgba(0, 0, 0, 0.06));
+  color: var(--ios-text-primary, #1d1d1f);
+}
+
+.el-table .ios-table-action-btn.el-button--default,
+.el-table .operation-buttons .el-button.el-button--default,
+.el-table .action-table-actions .el-button.el-button--default,
+.el-table .table-action-buttons .el-button.el-button--default {
+  background-color: var(--ios-bg-secondary, #ffffff);
+  border-color: var(--ios-border-color, rgba(0, 0, 0, 0.06));
+  color: var(--ios-text-primary, #1d1d1f);
+}
+
+.el-table .ios-table-action-btn.el-button--primary,
+.el-table .operation-buttons .el-button.el-button--primary,
+.el-table .action-table-actions .el-button.el-button--primary,
+.el-table .table-action-buttons .el-button.el-button--primary {
+  background-color: var(--ios-blue, #007aff);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(var(--ios-blue-rgb, 0, 122, 255), 0.28);
+}
+
+.el-table .ios-table-action-btn.el-button--danger,
+.el-table .operation-buttons .el-button.el-button--danger,
+.el-table .action-table-actions .el-button.el-button--danger,
+.el-table .table-action-buttons .el-button.el-button--danger {
+  background-color: var(--ios-red, #ff3b30);
+  border-color: transparent;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(255, 59, 48, 0.28);
+}
+
+.el-table .ios-table-action-btn:hover,
+.el-table .operation-buttons .el-button:hover,
+.el-table .action-table-actions .el-button:hover,
+.el-table .table-action-buttons .el-button:hover {
+  filter: brightness(0.98);
+}

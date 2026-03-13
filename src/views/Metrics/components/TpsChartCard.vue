@@ -12,11 +12,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import * as performanceAPI from '@/api/performance'
 import BaseCard from '@/components/cards/DashboardCard.vue'
 import BaseSegmentedControl from '@/components/common/BaseSegmentedControl.vue'
+import { useUIStore } from '@/store/modules/ui'
 
 const tpsTimeRange = ref('1h')
 const timeOptions = [
@@ -27,12 +28,8 @@ const timeOptions = [
 const tpsChartRef = ref<HTMLElement>()
 let tpsChart: echarts.ECharts | null = null
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-let themeObserver: MutationObserver | null = null
-
-const updateTheme = () => {
-  isDark.value = document.documentElement.classList.contains('dark')
-}
+const uiStore = useUIStore()
+const isDark = computed(() => uiStore.theme === 'dark')
 
 const getChartColors = () => ({
   text: isDark.value ? '#C5C5D2' : '#8e8e93',
@@ -54,7 +51,8 @@ const initTpsChart = async () => {
   const limit = rangeMap[tpsTimeRange.value] || 60
   
   try {
-    const history = await performanceAPI.getHistory({ limit })
+    const historyRes = await performanceAPI.getHistory({ limit })
+    const history = Array.isArray(historyRes) ? historyRes : []
     const times = history.map(h => h.timestamp.split('T')[1].split('.')[0])
     const tpsData = history.map(h => h.tps)
     
@@ -107,14 +105,11 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  themeObserver = new MutationObserver(updateTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   initTpsChart()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
-  themeObserver?.disconnect()
   tpsChart?.dispose()
   window.removeEventListener('resize', handleResize)
 })

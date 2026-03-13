@@ -46,35 +46,6 @@
       </div>
     </div>
 
-    <!-- 算法性能对比 (New Table) -->
-    <BaseCard title="算法性能对比">
-      <BaseTable
-        :data="tableData"
-        :config="consensusComparisonTable"
-        :loading="loading"
-      >
-        <template #avgTps="{ row }">
-          <span style="color: var(--ios-success)">{{ row.avgTps }}</span>
-        </template>
-        <template #peakTps="{ row }">
-          <span style="font-weight: 600">{{ row.peakTps }}</span>
-        </template>
-        <template #cpuUsage="{ row }">
-          <el-progress :percentage="row.cpuUsage" :status="row.cpuUsage > 80 ? 'exception' : 'success'" />
-        </template>
-        <template #memoryUsage="{ row }">
-          {{ row.memoryUsage }} MB
-        </template>
-        <!-- 固定栏：综合评分 -->
-        <template #score="{ row }">
-          <div class="score-display">
-            <span class="score-value" :style="{ color: getScoreColor(row.score) }">{{ row.score }}</span>
-            <span class="score-label">分</span>
-          </div>
-        </template>
-      </BaseTable>
-    </BaseCard>
-
     <div class="row-layout">
       <!-- 配置面板 -->
       <div class="col-left">
@@ -288,6 +259,36 @@
         </BaseCard>
       </div>
     </div>
+
+    <BaseCard title="预估算法性能对比">
+      <ActionTable
+        :data="tableData"
+        :columns="comparisonColumns"
+        :loading="loading"
+        :card="false"
+        stripe
+        border
+      >
+        <template #avgTps="{ row }">
+          <span style="color: var(--ios-success)">{{ row.avgTps }}</span>
+        </template>
+        <template #peakTps="{ row }">
+          <span style="font-weight: 600">{{ row.peakTps }}</span>
+        </template>
+        <template #cpuUsage="{ row }">
+          <el-progress :percentage="row.cpuUsage" :status="row.cpuUsage > 80 ? 'exception' : 'success'" />
+        </template>
+        <template #memoryUsage="{ row }">
+          {{ row.memoryUsage }} MB
+        </template>
+        <template #score="{ row }">
+          <div class="score-display">
+            <span class="score-value" :style="{ color: getScoreColor(row.score) }">{{ row.score }}</span>
+            <span class="score-label">分</span>
+          </div>
+        </template>
+      </ActionTable>
+    </BaseCard>
   </div>
 </template>
 
@@ -301,7 +302,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useConsensusStore } from '@/store/modules/consensus'
 import BaseCard from '@/components/common/BaseCard.vue'
-import BaseTable from '@/components/common/BaseTable.vue'
+import ActionTable from '@/components/table/ActionTable.vue'
 import { consensusComparisonTable } from '@/config/tables/consensusComparison'
 
 const store = useConsensusStore()
@@ -315,6 +316,22 @@ const tableData = computed(() => consensusAlgorithms.value.map(a => ({
   ...a,
   algorithm: a.displayName
 })))
+
+const comparisonColumns = computed(() => {
+  const cols = (consensusComparisonTable.columns || []).map((c) => ({ ...c })) as any[]
+  const fixed = consensusComparisonTable.fixedSection
+  if (fixed) {
+    cols.push({
+      prop: fixed.slotName || fixed.contentProp || '__fixed',
+      label: fixed.label,
+      width: fixed.width,
+      fixed: 'right',
+      sortable: false,
+      slotName: fixed.slotName
+    })
+  }
+  return cols
+})
 
 const addNewAlgorithm = () => {
   ElMessage.info('功能开发中：添加新共识算法')
@@ -380,10 +397,13 @@ onMounted(() => {
   padding: 20px;
   max-width: 1400px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .algorithm-section {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .algorithm-list {

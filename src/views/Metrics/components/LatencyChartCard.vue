@@ -12,21 +12,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import * as performanceAPI from '@/api/performance'
 import BaseCard from '@/components/cards/DashboardCard.vue'
+import { useUIStore } from '@/store/modules/ui'
 
 const latencyMetric = ref('p95')
 const latencyChartRef = ref<HTMLElement>()
 let latencyChart: echarts.ECharts | null = null
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-let themeObserver: MutationObserver | null = null
-
-const updateTheme = () => {
-  isDark.value = document.documentElement.classList.contains('dark')
-}
+const uiStore = useUIStore()
+const isDark = computed(() => uiStore.theme === 'dark')
 
 const getChartColors = () => ({
   text: isDark.value ? '#C5C5D2' : '#8e8e93',
@@ -43,7 +40,8 @@ const initLatencyChart = async () => {
   const colors = getChartColors()
   
   try {
-    const history = await performanceAPI.getHistory({ limit: 200 })
+    const historyRes = await performanceAPI.getHistory({ limit: 200 })
+    const history = Array.isArray(historyRes) ? historyRes : []
     const buckets = [100, 200, 300, 400, 500, 600]
     const counts = buckets.map((b, idx) => {
       const min = idx === 0 ? 0 : buckets[idx - 1]
@@ -101,14 +99,11 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  themeObserver = new MutationObserver(updateTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   initLatencyChart()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
-  themeObserver?.disconnect()
   latencyChart?.dispose()
   window.removeEventListener('resize', handleResize)
 })

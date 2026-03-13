@@ -26,19 +26,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import * as echarts from 'echarts'
 import BaseCard from '@/components/cards/DashboardCard.vue'
+import { useUIStore } from '@/store/modules/ui'
 
 const healthScoreChartRef = ref<HTMLElement>()
 let healthScoreChart: echarts.ECharts | null = null
 
-const isDark = ref(document.documentElement.classList.contains('dark'))
-let themeObserver: MutationObserver | null = null
-
-const updateTheme = () => {
-  isDark.value = document.documentElement.classList.contains('dark')
-}
+const uiStore = useUIStore()
+const isDark = computed(() => uiStore.theme === 'dark')
 
 const getChartColors = () => ({
   text: isDark.value ? '#C5C5D2' : '#8e8e93',
@@ -97,14 +94,11 @@ const handleResize = () => {
 }
 
 onMounted(() => {
-  themeObserver = new MutationObserver(updateTheme)
-  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
   initHealthScoreChart()
   window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
-  themeObserver?.disconnect()
   healthScoreChart?.dispose()
   window.removeEventListener('resize', handleResize)
 })

@@ -6,39 +6,29 @@
       </el-button>
     </template>
 
-    <el-table :data="comparisonData" stripe border>
-      <el-table-column prop="algorithm" label="共识算法" width="120" fixed />
-      <el-table-column prop="avgTps" label="平均TPS" width="120" sortable>
-        <template #default="{ row }">
-          <strong>{{ row.avgTps }}</strong>
-        </template>
-      </el-table-column>
-      <el-table-column prop="peakTps" label="峰值TPS" width="120" sortable>
-        <template #default="{ row }">
-          <el-tag type="success">{{ row.peakTps }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="avgLatency" label="平均延迟(ms)" width="140" sortable />
-      <el-table-column prop="p95Latency" label="P95延迟(ms)" width="140" sortable />
-      <el-table-column prop="p99Latency" label="P99延迟(ms)" width="140" sortable />
-      <el-table-column prop="cpuUsage" label="CPU使用率" width="120">
-        <template #default="{ row }">
-          <el-progress :percentage="row.cpuUsage" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="memoryUsage" label="内存使用率" width="120">
-        <template #default="{ row }">
-          <el-progress :percentage="row.memoryUsage" />
-        </template>
-      </el-table-column>
-      <el-table-column prop="networkIO" label="网络I/O" width="120" />
-      <el-table-column prop="faultTolerance" label="容错率" width="100" />
-      <el-table-column label="综合评分" width="120" fixed="right">
-        <template #default="{ row }">
-          <el-rate v-model="row.rating" disabled show-score />
-        </template>
-      </el-table-column>
-    </el-table>
+    <ActionTable 
+      :data="comparisonData" 
+      :columns="consensusComparisonTable.columns"
+      :card="false"
+      stripe 
+      border
+    >
+      <template #avgTps="{ row }">
+        <strong>{{ row.avgTps }}</strong>
+      </template>
+      <template #peakTps="{ row }">
+        <el-tag type="success">{{ row.peakTps }}</el-tag>
+      </template>
+      <template #cpuUsage="{ row }">
+        <el-progress :percentage="row.cpuUsage" />
+      </template>
+      <template #memoryUsage="{ row }">
+        <el-progress :percentage="row.memoryUsage" />
+      </template>
+      <template #rating="{ row }">
+        <el-rate v-model="row.rating" disabled show-score />
+      </template>
+    </ActionTable>
   </BaseCard>
 </template>
 
@@ -48,8 +38,16 @@ import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import * as analysisAPI from '@/api/analysis'
 import BaseCard from '@/components/cards/DashboardCard.vue'
+import ActionTable from '@/components/table/ActionTable.vue'
+import { consensusComparisonTable } from '@/config/tables/consensusComparison'
 
 const comparisonData = ref<any[]>([])
+
+const normalizeArray = (res: unknown): any[] => {
+  if (Array.isArray(res)) return res
+  if (res && typeof res === 'object' && Array.isArray((res as any).list)) return (res as any).list
+  return []
+}
 
 const exportComparison = async () => {
   try {
@@ -61,10 +59,12 @@ const exportComparison = async () => {
 }
 
 onMounted(() => {
-  analysisAPI.getAlgorithmComparison().then(res => {
-    comparisonData.value = res || []
-  }).catch(() => {
-    comparisonData.value = []
-  })
+  analysisAPI.getAlgorithmComparison()
+    .then((res) => {
+      comparisonData.value = normalizeArray(res)
+    })
+    .catch(() => {
+      comparisonData.value = []
+    })
 })
 </script>

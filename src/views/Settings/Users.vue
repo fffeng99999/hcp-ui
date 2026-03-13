@@ -6,31 +6,23 @@
       </el-button>
     </template>
 
-    <ActionTable :data="users" :action-width="tableConfig.action.width" :card="false">
-      <el-table-column prop="username" :label="tableConfig.columns.username.label" :width="tableConfig.columns.username.width" resizable />
-      <el-table-column prop="email" :label="tableConfig.columns.email.label" :width="tableConfig.columns.email.width" resizable />
-      <el-table-column prop="role" :label="tableConfig.columns.role.label" :width="tableConfig.columns.role.width" resizable>
-        <template #default="{ row }">
-          <el-tag :type="getRoleType(row.role)">{{ row.role }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="status" :label="tableConfig.columns.status.label" :width="tableConfig.columns.status.width" resizable>
-        <template #default="{ row }">
-          <el-tag :type="row.status === '正常' ? 'success' : 'danger'" size="small">
-            {{ row.status }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="lastLogin" :label="tableConfig.columns.lastLogin.label" :width="tableConfig.columns.lastLogin.width" resizable />
-      <el-table-column prop="createdAt" :label="tableConfig.columns.createdAt.label" :width="tableConfig.columns.createdAt.width" resizable />
-      <template #actions="{ row }">
-        <div class="action-table-actions">
-          <el-button size="small" @click="editUser(row)">编辑</el-button>
-          <el-button size="small" @click="resetPassword(row)">重置密码</el-button>
-          <el-button size="small" type="danger" @click="deleteUser(row)" :disabled="row.role === '超级管理员'">
-            删除
-          </el-button>
-        </div>
+    <ActionTable 
+      :data="users" 
+      :columns="columns"
+      :action-buttons="actionButtons"
+      :action-width="260" 
+      :card="false"
+    >
+      <!-- Custom Slot for Role -->
+      <template #role="{ row }">
+        <el-tag :type="getRoleType(row.role)">{{ row.role }}</el-tag>
+      </template>
+      
+      <!-- Custom Slot for Status -->
+      <template #status="{ row }">
+        <el-tag :type="row.status === '正常' ? 'success' : 'danger'" size="small">
+          {{ row.status }}
+        </el-tag>
       </template>
     </ActionTable>
   </BaseCard>
@@ -66,12 +58,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import * as settingsAPI from '@/api/settings'
-import ActionTable from '@/components/table/ActionTable.vue'
-import { settingsUsersTable as tableConfig } from '@/config/tables/settingsUsers'
+import ActionTable, { TableColumn } from '@/components/table/ActionTable.vue'
+import { ActionButton } from '@/components/table/TableActionButtons.vue'
 import type { SystemUser } from '@/types'
 import BaseCard from '@/components/common/BaseCard.vue'
 import { useConfigVersionStore } from '@/store/modules/configVersion'
@@ -85,6 +77,16 @@ const userForm = ref<Partial<SystemUser>>({
   role: '观察者',
   status: '正常'
 })
+
+// Columns Configuration
+const columns = computed<TableColumn[]>(() => [
+  { prop: 'username', label: '用户名', width: 150 },
+  { prop: 'email', label: '邮箱', width: 200 },
+  { prop: 'role', label: '角色', width: 120, slotName: 'role' },
+  { prop: 'status', label: '状态', width: 100, slotName: 'status' },
+  { prop: 'lastLogin', label: '最后登录', width: 180 },
+  { prop: 'createdAt', label: '创建时间', width: 180 }
+])
 
 // 本地保存的配置版本号，用于与全局版本号对比
 const configVersionStore = useConfigVersionStore()
@@ -190,6 +192,26 @@ const deleteUser = async (row: SystemUser) => {
       }
     })
 }
+
+// Action Buttons Configuration (Template 2)
+const actionButtons = computed<ActionButton[]>(() => [
+  { 
+    label: '编辑', 
+    onClick: editUser, 
+    templateType: 'detail' // 详情/普通样式
+  },
+  { 
+    label: '重置密码', 
+    onClick: resetPassword, 
+    templateType: 'detail' // 详情/普通样式
+  },
+  { 
+    label: '删除', 
+    onClick: deleteUser, 
+    templateType: 'delete', // 红色删除样式
+    disabled: (row) => row.role === '超级管理员'
+  }
+])
 
 onMounted(() => {
   loadUsers()

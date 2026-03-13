@@ -1,39 +1,49 @@
 <template>
   <div class="metrics-page">
-    <!-- 实时性能指标 (Four Parameter Preview Board) -->
-    <StatCardsGroup :cards="realtimeMetrics" />
-
-    <!-- 图表区域 -->
-    <el-row :gutter="20" class="mt-4">
-      <el-col :span="12">
-        <TpsChartCard />
-      </el-col>
-      <el-col :span="12">
-        <LatencyChartCard />
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="20" class="mt-4">
-      <el-col :span="16">
-        <NodeHeatmapCard />
-      </el-col>
-      <el-col :span="8">
-        <HealthScoreCard />
-      </el-col>
-    </el-row>
-
-    <div class="mt-4">
-      <ConsensusComparisonTable />
+    <div v-if="error" class="error-message">
+      {{ error }}
     </div>
 
-    <div class="mt-4">
-      <AlertsCard />
+    <template v-else-if="metrics">
+      <!-- 实时性能指标 (Four Parameter Preview Board) -->
+      <StatCardsGroup :cards="realtimeMetrics" />
+
+      <!-- 图表区域 -->
+      <el-row :gutter="20" class="mt-4">
+        <el-col :span="12">
+          <TpsChartCard />
+        </el-col>
+        <el-col :span="12">
+          <LatencyChartCard />
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20" class="mt-4">
+        <el-col :span="16">
+          <NodeHeatmapCard />
+        </el-col>
+        <el-col :span="8">
+          <HealthScoreCard />
+        </el-col>
+      </el-row>
+
+      <div class="mt-4">
+        <ConsensusComparisonTable />
+      </div>
+
+      <div class="mt-4">
+        <AlertsCard />
+      </div>
+    </template>
+    
+    <div v-else class="loading-state">
+      <el-skeleton :rows="10" animated />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, onErrorCaptured } from 'vue'
 import { storeToRefs } from 'pinia'
 import { usePerformanceStore } from '@/store/modules/performance'
 import { useNodeStore } from '@/store/modules/node'
@@ -56,11 +66,25 @@ const { metrics } = storeToRefs(performanceStore)
 const { onlineCount } = storeToRefs(nodeStore)
 const { currentAlgorithm, parameters } = storeToRefs(consensusStore)
 
+const error = ref<string | null>(null)
+
+onErrorCaptured((err) => {
+  console.error('Metrics page error captured:', err)
+  error.value = `页面加载出错: ${err instanceof Error ? err.message : String(err)}`
+  return false // 阻止错误向上传播
+})
+
+const txPoolSize = computed(() => {
+  if (!parameters.value || !currentAlgorithm.value) return '-'
+  const algoParams = parameters.value[currentAlgorithm.value]
+  return algoParams?.txPoolSize ?? '-'
+})
+
 // 实时指标
 const realtimeMetrics = computed(() => [
   {
     label: '当前TPS',
-    value: metrics.value.tps.toLocaleString(),
+    value: metrics.value?.tps?.toLocaleString() ?? '0',
     icon: 'Odometer',
     color: '#67C23A',
     trend: 0,
@@ -68,7 +92,7 @@ const realtimeMetrics = computed(() => [
   },
   {
     label: '平均延迟',
-    value: `${metrics.value.latency}ms`,
+    value: `${metrics.value?.latency ?? 0}ms`,
     icon: 'Timer',
     color: '#409EFF',
     trend: 0,
@@ -84,7 +108,7 @@ const realtimeMetrics = computed(() => [
   },
   {
     label: '交易池',
-    value: `${parameters.value[currentAlgorithm.value]?.txPoolSize ?? '-'}`,
+    value: `${txPoolSize.value}`,
     icon: 'DataAnalysis',
     color: '#909399',
     trend: 0,
@@ -110,5 +134,14 @@ onUnmounted(() => {
 }
 .mt-4 {
   margin-top: 20px;
+}
+.error-message {
+  padding: 20px;
+  color: #F56C6C;
+  background-color: #FEF0F0;
+  border-radius: 4px;
+}
+.loading-state {
+  padding: 20px;
 }
 </style>
